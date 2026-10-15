@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Защита решения: некрополь</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: шпаргалка докладчика — одна колонка, оглавление сверху, вопросы-ответы раскрываются */
+:root{
+  --paper:#f4f6f5; --sheet:#ffffff; --ink:#1c242e; --muted:#5b6672; --rule:#d8dddb;
+  --accent:#2c4a78; --accent-soft:#e6ecf5; --dagger:#8a2f3a; --say:#24573b; --say-soft:#e4f0e8;
+  --warn:#8a5a12; --warn-soft:#f6ecd9;
+  --f-display:"Literata", Georgia, "Times New Roman", serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#13171c; --sheet:#1a1f26; --ink:#e4e7ea; --muted:#9aa4ae; --rule:#2e353e;
+  --accent:#8fb0e3; --accent-soft:#1f2b3d; --dagger:#e08a94; --say:#86c9a1; --say-soft:#1b2b21;
+  --warn:#e2b56b; --warn-soft:#2e2617; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#13171c; --sheet:#1a1f26; --ink:#e4e7ea; --muted:#9aa4ae; --rule:#2e353e;
+  --accent:#8fb0e3; --accent-soft:#1f2b3d; --dagger:#e08a94; --say:#86c9a1; --say-soft:#1b2b21;
+  --warn:#e2b56b; --warn-soft:#2e2617; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:16px/1.65 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+.wrap{max-width:820px;margin:0 auto;display:grid;gap:48px}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:650;line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.8rem,4.2vw,2.4rem)}
+h2{font-size:1.45rem}
+h3{font-size:1.12rem;font-weight:500}
+h4{font-size:1rem;font-weight:500}
+p{margin:0}
+section{display:grid;gap:16px;min-width:0}
+.prose{max-width:68ch}
+.eyebrow{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+header{display:grid;gap:14px;border-bottom:1px solid var(--rule);padding-bottom:26px}
+.lede{font-size:1.08rem;color:var(--muted);max-width:64ch}
+nav ol{margin:0;padding-left:1.3em;columns:2 260px;column-gap:28px;font-size:.95rem}
+nav li{break-inside:avoid;padding:2px 0}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--accent-soft);padding:0 .3em;border-radius:3px}
+pre{margin:0;font-family:var(--f-mono);font-size:.84rem;line-height:1.55;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;overflow-x:auto}
+pre code{background:none;padding:0}
+.dag{color:var(--dagger);font-family:var(--f-display)}
+.say{background:var(--say-soft);border-left:3px solid var(--say);padding:14px 16px;border-radius:0 6px 6px 0;display:grid;gap:8px}
+.say .tag,.note .tag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.say .tag{color:var(--say)}
+.note{background:var(--warn-soft);border-left:3px solid var(--warn);padding:12px 16px;border-radius:0 6px 6px 0;display:grid;gap:6px}
+.note .tag{color:var(--warn)}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-weight:600;font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--paper)}
+td.mono{font-family:var(--f-mono);font-size:.85rem;white-space:nowrap}
+dl.gloss{margin:0;display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:10px 18px}
+dl.gloss dt{font-weight:600}
+dl.gloss dd{margin:0;min-width:0}
+@media (max-width:560px){dl.gloss{grid-template-columns:1fr;gap:2px}dl.gloss dd{margin-bottom:10px}}
+.decision{display:grid;gap:6px;padding:14px 16px;background:var(--sheet);border:1px solid var(--rule);border-radius:6px}
+.decision b.q{font-family:var(--f-display);font-weight:500;font-size:1.02rem}
+.decision .alt{font-size:.9rem;color:var(--muted)}
+.stack{display:grid;gap:12px}
+.file{display:grid;gap:12px;padding:18px;background:var(--sheet);border:1px solid var(--rule);border-radius:8px;min-width:0}
+.file .io{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.88rem;color:var(--muted)}
+.file .io b{color:var(--ink);font-weight:600}
+.block{display:grid;gap:8px;border-top:1px dashed var(--rule);padding-top:12px;min-width:0}
+.block .lbl{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+details{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:0 16px}
+details[open]{padding-bottom:14px}
+summary{cursor:pointer;padding:12px 0;font-weight:600}
+details>div{display:grid;gap:8px}
+ol.story{margin:0;padding-left:1.3em;display:grid;gap:12px}
+ol.story li::marker{font-family:var(--f-mono);color:var(--accent)}
+ul{margin:0;padding-left:1.2em;display:grid;gap:6px}
+.os{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.os>div{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;display:grid;gap:8px;align-content:start;min-width:0}
+.os h4{font-family:var(--f-body);font-weight:600;font-size:.95rem}
+footer{font-size:.85rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:18px}
+@media (prefers-reduced-motion:no-preference){details[open]>div{animation:fade .2s ease}}
+@keyframes fade{from{opacity:.4}to{opacity:1}}
+</style>
+
+<style>body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">Для Эльмиры · подготовка к защите</span>
+  <h1>Как устроено решение и как его защищать</h1>
+  <p class="lede">Эльмира, здесь простыми словами объяснено, что сделано, что происходит в коде, как его запустить, почему решение устроено именно так и что отвечать на вопросы проверяющего. Знание программирования не требуется: все термины разобраны в словаре.</p>
+  <nav aria-label="Содержание"><ol>
+    <li><a href="#minute">Рассказ за одну минуту</a></li>
+    <li><a href="#task">Что просит задание и где ответ</a></li>
+    <li><a href="#gloss">Словарь терминов</a></li>
+    <li><a href="#source">Почему этот источник</a></li>
+    <li><a href="#pipeline">Как работает решение в целом</a></li>
+    <li><a href="#code">Что происходит в коде</a></li>
+    <li><a href="#run">Как скачать данные и запустить</a></li>
+    <li><a href="#decisions">Почему код написан так</a></li>
+    <li><a href="#story">История доработок</a></li>
+    <li><a href="#qa">Вопросы и ответы</a></li>
+    <li><a href="#weak">Слабые места</a></li>
+    <li><a href="#prep">Что сделать перед защитой</a></li>
+  </ol></nav>
+</header>
+
+<section id="minute">
+  <h2>Рассказ за одну минуту</h2>
+  <div class="say">
+    <span class="tag">Можно сказать почти дословно</span>
+    <p>«Я взяла „Петербургский некрополь“ 1912 года — словарь погребённых на петербургских кладбищах. Первый том, буквы А–Г, это 13,6 тысячи статей. Текст получен распознаванием (OCR), поэтому в нём много ошибок: знак смерти † превратился в плюс, единицу, букву Т, а „іюля“ — в „поля“.</p>
+    <p>По схеме семинара я разбила задачу на семь этапов и подробно проработала этап извлечения дат рождения и смерти. Для него составлена серия из пяти промтов, по которым ИИ написал код. В каждом промте есть и задача, и способ проверки.</p>
+    <p>Первая версия кода находила дату смерти только у трети статей. После частотного анализа ошибок OCR и трёх доработок — у 93,6 %. Для проверки вручную размечено 100 случайных статей. На последних 40, которые не использовались при отладке, точность по дате смерти 95 %, полнота 97 %. Ещё 417 подозрительных статей программа сама отложила на ручную проверку. Дальше нужно поправить границы родственников, восстановить испорченные OCR годы и перейти к этапам „имя“, „статус“, „кладбище“.»</p>
+  </div>
+</section>
+
+<section id="task">
+  <h2>Что просит задание и где ответ</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Пункт задания (слайд 13)</th><th>Где в отчёте result</th><th>Суть ответа</th></tr></thead>
+    <tbody>
+      <tr><td>1. Сформулировать алгоритм по схеме семинара</td><td>Раздел 01</td><td>Шесть шагов схемы (слайд 12) применены к некрополю; таблица этапов 0–6 с правилами и контролем</td></tr>
+      <tr><td>2. Выбрать этап, написать серию промтов с описанием задачи и механизмом контроля</td><td>Раздел 02</td><td>Этап 3 «Даты»; пять промтов, в каждом блок «Контроль»</td></tr>
+      <tr><td>3. Протестировать код, оценить соответствие задаче, отметить доработку</td><td>Разделы 03–04</td><td>Прогон на всём томе, цифры по итерациям, оценка по эталону, список доработок</td></tr>
+    </tbody>
+  </table></div>
+  <p class="prose">В план семинара (слайд 2) входит пункт «Декларация использования ИИ», поэтому она добавлена в конец отчёта. Шаблон декларации есть на слайде 16, но там он набран белым по белому, и при показе его не видно.</p>
+</section>
+
+<section id="gloss">
+  <h2>Словарь терминов</h2>
+  <dl class="gloss prose">
+    <dt>OCR</dt><dd>Распознавание текста со скана. Машина «читает» картинку страницы и ошибается: путает похожие знаки (<span class="dag">†</span> → «+», «8» → «3»), теряет дореформенную «і».</dd>
+    <dt>Статья</dt><dd>Одна запись словаря об одном человеке: «Фамилия, Имя Отчество, …, р. дата † дата (кладбище)».</dd>
+    <dt>Регулярное выражение</dt><dd>Шаблон для поиска в тексте. Например, «одна-две цифры, пробел, название месяца, пробел, четыре цифры» находит «16 декабря 1782». Так работал код на семинаре: поиск «продал», «продала»… — это тоже регулярное выражение. Шпаргалка по значкам — в разделе «Что происходит в коде».</dd>
+    <dt>CSV</dt><dd>Таблица в виде текстового файла: одна строка — одна запись, столбцы разделены запятыми. Открывается в Excel, Google Таблицах, LibreOffice.</dd>
+    <dt>Скрипт</dt><dd>Файл с программой (<code>.py</code>), который запускают одной командой. В проекте их шесть, каждый делает одну вещь.</dd>
+    <dt>Функция</dt><dd>Именованный кусок программы, который делает одно действие. Например, <code>norm_year</code> «чинит» год: «т852» → 1852.</dd>
+    <dt>Покрытие</dt><dd>У какой доли статей программа хоть что-то нашла. Покрытие показывает, насколько программа «смелая», но не говорит, верно ли найденное.</dd>
+    <dt>Флаг</dt><dd>Пометка «тут подозрительно». Например, рождение позже смерти. Программа не исправляет такие места сама, а откладывает их человеку.</dd>
+    <dt>Эталон</dt><dd>Статьи, где правильный ответ записан вручную. Ответ программы сравнивается с ним (иначе «золотой стандарт»).</dd>
+    <dt>Точность</dt><dd>Какая доля найденных программой дат верна. «Точность 95 %» — из 100 выданных дат 95 правильные.</dd>
+    <dt>Полнота</dt><dd>Какая доля дат, которые есть в тексте, найдена. «Полнота 97 %» — из 100 дат, что реально есть, найдено 97.</dd>
+    <dt>Отложенная выборка</dt><dd>Вторая порция эталона, которую размечают после окончания отладки. Если подгонять программу под проверочные примеры, она «выучит» их, и оценка будет завышена. Отложенная выборка даёт честную цифру. Так проверяют на экзамене задачами, которых не было в тренировочных.</dd>
+    <dt>«Своя» часть статьи</dt><dd>Начало статьи — до родственников («Жена:», «Съ …») и до скобки с кладбищем. Только там лежат даты самого человека.</dd>
+  </dl>
+</section>
+
+<section id="source" class="prose">
+  <h2>Почему этот источник</h2>
+  <ul>
+    <li><b>Похож на семинарский.</b> На семинаре разбирали актовые книги XVIII в.: однотипные записи, которые надо делить по разделителям. Некрополь устроен так же: тысячи записей по одной формуле.</li>
+    <li><b>Формула есть, но текст грязный.</b> Можно сформулировать правила деления (пункт 1 задания), но сразу они не сработают. Значит, есть что тестировать и дорабатывать (пункт 3).</li>
+    <li><b>Публичный и проверяемый.</b> Скан и OCR-текст лежат на archive.org, любой может открыть и сверить.</li>
+    <li><b>Есть исследовательский смысл.</b> Из дат получаются возраст смерти, сезонность (пик в марте, спад в августе), рост числа захоронений по десятилетиям. Это готовые вопросы для домашнего задания 2.</li>
+    <li><b>Почему даты, а не другой этап.</b> Это самый сложный и самый ценный этап. Через даты видно все проблемы OCR, а итог легко проверить по смыслу: рождение не может быть позже смерти, возраст в тексте должен совпадать с разницей дат.</li>
+  </ul>
+</section>
+
+<section id="pipeline">
+  <h2>Как работает решение в целом</h2>
+  <p class="prose">Решение — конвейер из скриптов. Каждый берёт результат предыдущего и сохраняет свой в папку <code>output</code>. Так устроено и на семинаре: «поиск разделителя → список разделителей → сверка».</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Скрипт</th><th>Этап</th><th>Берёт</th><th>Создаёт</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">download.py</td><td>0. Скачать источник</td><td>archive.org</td><td class="mono">data/necropol_t1.txt</td></tr>
+      <tr><td class="mono">segment.py</td><td>0–1. Очистить и разбить на статьи</td><td class="mono">necropol_t1.txt</td><td class="mono">output/entries.csv</td></tr>
+      <tr><td class="mono">dates_v1.py</td><td>3. Даты, наивная версия</td><td class="mono">entries.csv</td><td class="mono">output/dates_v1.csv</td></tr>
+      <tr><td class="mono">dates_v2.py</td><td>3. Даты, итоговая версия</td><td class="mono">entries.csv</td><td class="mono">output/dates.csv, dates_review.csv, dates_report.txt</td></tr>
+      <tr><td class="mono">evaluate.py</td><td>Проверка по эталону</td><td class="mono">dates.csv + data/gold_dates.csv</td><td>Цифры на экране</td></tr>
+    </tbody>
+  </table></div>
+  <p class="prose">Главная идея этапа 3: сначала посчитать, какие ошибки OCR реально встречаются, и только потом писать шаблоны. Вот что показал подсчёт:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Что должно быть</th><th>Как выглядит в OCR (по частоте)</th></tr></thead>
+    <tbody>
+      <tr><td>знак <span class="dag">†</span></td><td><code>+</code> 4 871, <code>1</code> 1 998, <code>|</code> 1 362, <code>Т</code> 1 154, <code>{</code> 505, <code>т</code> 310, <code>-</code> 120</td></tr>
+      <tr><td>іюля</td><td>юля 758, поля 314, 1юля 79, тюля 53, оля 23, !юля 12…</td></tr>
+      <tr><td>іюня</td><td>юня 534, поня 263, 1юня 187, пюня 92, ня 49, шоня 19…</td></tr>
+      <tr><td>апрѣля</td><td>апрЪля 1 287, апрфля 144, апръфля 76, апр$ля 61, апрзля 37…</td></tr>
+      <tr><td>год 18xx</td><td>13xx (OCR путает 8 и 3), «т852» (1 → т)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="code">
+  <h2>Что происходит в коде</h2>
+  <p class="prose">Ниже каждый файл разобран по смысловым блокам. Построчно разбираться не нужно: достаточно понимать, что делает каждый блок и зачем он нужен. Код можно открыть в любом текстовом редакторе, например в VS Code или «Блокноте». Строки, которые начинаются с <code>#</code>, и текст в тройных кавычках <code>"""…"""</code> — комментарии на русском. Компьютер их пропускает, они написаны для человека.</p>
+
+  <h3>Как читать регулярные выражения: шпаргалка</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Значок</th><th>Значит</th><th>Пример</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">\d</td><td>любая цифра</td><td><code>\d\d</code> находит «16»</td></tr>
+      <tr><td class="mono">\s</td><td>пробел (или перенос строки)</td><td><code>марта\s1852</code> — «марта 1852»</td></tr>
+      <tr><td class="mono">[абв]</td><td>одна любая буква из списка</td><td><code>[юо]ля</code> — «юля» или «оля»</td></tr>
+      <tr><td class="mono">?</td><td>предыдущее может быть, а может не быть</td><td><code>ф?февраля</code> — «февраля» и «ффевраля»</td></tr>
+      <tr><td class="mono">{1,2}</td><td>от одного до двух раз</td><td><code>\d{1,2}</code> — день «5» или «15»</td></tr>
+      <tr><td class="mono">|</td><td>«или»</td><td><code>марта|мая</code></td></tr>
+      <tr><td class="mono">\S</td><td>любой знак, кроме пробела</td><td><code>апр\S{0,3}ля</code> — «апрЪля», «апр$ля», «апрфля»</td></tr>
+      <tr><td class="mono">( )</td><td>«запомни это место»: так программа достаёт день, месяц, год по отдельности</td><td><code>(\d{1,2}) (марта)</code></td></tr>
+      <tr><td class="mono">(?=…) (?&lt;!…)</td><td>«проверь, что дальше / перед этим стоит…», не забирая это в результат</td><td><code>1(?=\s)</code> — «1», за которой пробел</td></tr>
+      <tr><td class="mono">re.I</td><td>не различать заглавные и строчные</td><td>«Февраля» = «февраля»</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="file">
+    <h3><code>download.py</code> — скачивание источника</h3>
+    <div class="io"><span>Вход: <b>ссылка на archive.org</b></span><span>Выход: <b>data/necropol_t1.txt</b></span></div>
+    <p>Самый простой файл. В нём записан адрес OCR-текста на archive.org. Скрипт скачивает файл и проверяет, что внутри действительно словарь: ищет начало первой статьи «Абаза, Аггей». Если сервер вернул страницу ошибки, скрипт честно об этом скажет, а не запишет мусор. Если файл уже скачан, повторно не качает.</p>
+  </div>
+
+  <div class="file">
+    <h3><code>segment.py</code> — разбиение на статьи</h3>
+    <div class="io"><span>Вход: <b>data/necropol_t1.txt</b></span><span>Выход: <b>output/entries.csv</b> (номер, фамилия, отсылка или нет, текст статьи), <b>segment_report.txt</b></span></div>
+    <div class="block"><span class="lbl">Блок 1 · настройки</span>
+      <p>Вверху записано, откуда брать текст и куда класть результат, а также с чего начинается словарь (<code>START_MARKER = "Абаза, Аггей"</code>). Всё, что выше, — предисловие, его программа отрезает.</p></div>
+    <div class="block"><span class="lbl">Блок 2 · шаблон начала статьи</span>
+<pre><code>ENTRY_START = re.compile(r"^[А-ЯЁA-Z][а-яёъьіѣa-z]+(?:-[А-ЯЁа-яёъьіѣ]+)*,\s")</code></pre>
+      <p>По-русски: «в начале строки — заглавная буква, потом строчные буквы, возможно через дефис („Гюне-фонъ“), потом запятая и пробел». Латинские буквы разрешены, потому что OCR иногда подставляет латинскую «A» вместо русской «А».</p></div>
+    <div class="block"><span class="lbl">Блок 3 · функция is_junk — «это мусор?»</span>
+      <p>Для каждой строки отвечает «да» или «нет». Мусор — это номер страницы («27»), колонтитул из цифр и черт, длинная «каша» без пробелов вроде «[о иваиасисивнвин…», очень короткие обрывки. Все выброшенные строки сохраняются в отчёт: можно убедиться, что ничего ценного не потеряно.</p></div>
+    <div class="block"><span class="lbl">Блок 4 · абзацы и переносы</span>
+      <p>Текст режется по пустым строкам на абзацы. Строки абзаца склеиваются в одну, а перенос «Але- ксандро» превращается в «Александро». Правило: буква, дефис, пробел, буква → убрать дефис и пробел.</p></div>
+    <div class="block"><span class="lbl">Блок 5 · границы букв</span>
+      <p>Программа ищет, где начинается раздел «Б», «В», «Г»: первое место, где <b>пять</b> кандидатов в статьи подряд начинаются с новой буквы. Так одна случайная строка «Гизешаузенъ, …» в середине раздела «В» не переключит раздел раньше времени.</p></div>
+    <div class="block"><span class="lbl">Блок 6 · сборка статей</span>
+      <p>Главный цикл (<code>for … in …</code> — «для каждого абзаца сделай…»). Абзац становится новой статьёй, если начинается с «Фамилия,» <b>и</b> с буквы своего раздела. Иначе он приклеивается к предыдущей статье: это продолжение после разрыва страницы или строка стихотворной эпитафии вроде «Прохожий, чтя се, сердечно воздохни…».</p></div>
+    <div class="block"><span class="lbl">Блок 7 · функция split_glued — разрезать склейки</span>
+      <p>Иногда OCR не оставил пустой строки между статьями: «…кладбище). | Бобровъ, Яковъ…». Функция ищет места, где после «).» или после отсылки «— см. Альштремъ.» идёт новая «Фамилия, Имя» на ту же букву, и режет там. Так нашлось 1 363 склейки.</p></div>
+    <div class="block"><span class="lbl">Блок 8 · запись и контроль</span>
+      <p>Каждая статья записывается строкой в <code>entries.csv</code>. Отсылки вида «Аксенова, Елизавета — см. Анцъ» помечаются отдельно: дат в них нет, и в подсчёты они не идут. Затем контроль: сколько статей на каждую букву и где нарушен алфавитный порядок. Нарушение означает либо ошибку разбиения, либо OCR-ошибку в фамилии («Ансеновъ» вместо «Аксеновъ»). Всё это пишется в <code>segment_report.txt</code>.</p></div>
+  </div>
+
+  <div class="file">
+    <h3><code>dates_v1.py</code> — наивная версия</h3>
+    <div class="io"><span>Вход: <b>entries.csv</b></span><span>Выход: <b>output/dates_v1.csv</b></span></div>
+    <p>Около 40 строк. Ищет «р.» + день + правильное название месяца + год и знак «†» или «+» + дата. Так написал бы любой, кто не видел OCR-текста. Файл оставлен как точка отсчёта: он находит дату смерти только у 33,5 % статей, и на этом фоне видно, что дали доработки.</p>
+  </div>
+
+  <div class="file">
+    <h3><code>dates_v2.py</code> — итоговая версия, главный файл</h3>
+    <div class="io"><span>Вход: <b>entries.csv</b></span><span>Выход: <b>dates.csv</b> (даты), <b>dates_review.csv</b> (на проверку), <b>dates_report.txt</b> (сводка)</span></div>
+    <div class="block"><span class="lbl">Блок 1 · словарь месяцев с учётом ошибок OCR</span>
+<pre><code>I_NOISE = r"[1!|{(тпшгнШТІі'№‘]?"   # во что OCR превратил «і»
+7: rf"{I_NOISE}[юо]{{0,2}}ля",       # юля, поля, 1юля, тюля, оля</code></pre>
+      <p>Для каждого из 12 месяцев — шаблон, который ловит и правильное написание, и все массовые искажения из таблицы выше. Пример для июля по-русски: «необязательный мусорный знак на месте „і“, потом до двух букв „ю“ или „о“, потом „ля“».</p></div>
+    <div class="block"><span class="lbl">Блок 2 · день, год, знаки рождения и смерти</span>
+      <ul>
+        <li><b>День</b> — одна-две цифры. Допускаются «т» и «|» вместо единицы и двойная дата «15/27».</li>
+        <li><b>Год</b> — четыре знака из цифр, «т» и «з». «17..» тоже допустим: в самом издании так обозначен неразборчивый год.</li>
+        <li><b>Знак смерти</b> — любой из <code>+ † { | Т т ф — -</code>, но не внутри слова: иначе «т» из «октября» станет крестом. Одиночная «1» считается знаком, только если после неё пробел: «1 5 марта» = † 5 марта.</li>
+        <li><b>Знак рождения</b> — «р.». «рожд.» обычно значит «урождённая» («рожд. Соймонова»), поэтому дата после «рожд.» засчитывается, только если стоит сразу за словом.</li>
+        <li><b>Вставка</b> (<code>GAP</code>) — до двух слов между знаком и датой: «р. въ Ригѣ 9 апрѣля», «+ убитъ 12 октября».</li>
+      </ul></div>
+    <div class="block"><span class="lbl">Блок 3 · граница «своей» части статьи</span>
+<pre><code>SCOPE_END = …  # «(…кладбище», «Жена», «Сынъ», «Надпись», «Съ М. И. …»</code></pre>
+      <p>Шаблон находит место, где начинаются родственники или место погребения. Скобка считается границей, только если внутри есть слово «кладбище», «лавра», «монастырь», «пустынь», «собор», «церковь» или «село». Скобка вроде «рожд. Дюлу (Бивоча)» — это просто вариант фамилии.</p></div>
+    <div class="block"><span class="lbl">Блок 4 · функции-«починщики»: norm_year, norm_day, norm_month, iso</span>
+      <ul>
+        <li><code>norm_year</code>: «т852» → 1852; 1336 → 1836 (XIV века в издании нет, значит, 3 — это испорченная 8); «17..» → «год неизвестен».</li>
+        <li><code>norm_day</code>: «т» и «|» → 1; из «15/27» берёт 15; «115» понимает как «знак 1 + день 15».</li>
+        <li><code>norm_month</code>: по найденному слову («поня») определяет номер месяца (6).</li>
+        <li><code>iso</code>: собирает дату в формат «ГГГГ-ММ-ДД», который понимает Excel. Если известен только год или год и месяц, записывает столько, сколько известно.</li>
+      </ul></div>
+    <div class="block"><span class="lbl">Блок 5 · функция extract — чтение одной статьи</span>
+      <p>Сердце программы. Для каждой статьи:</p>
+      <ol class="story">
+        <li>отрезает фамилию до первой запятой;</li>
+        <li>отрезает всё после границы «своей» части (блок 3);</li>
+        <li>ищет «р.» + дату → рождение;</li>
+        <li>после рождения ищет знак смерти + дату → смерть;</li>
+        <li>если знака нет, берёт первую дату без знака и ставит флаг <code>death_without_mark</code>;</li>
+        <li>сразу после даты смерти ищет возраст («на 45 г.», «63 л.»);</li>
+        <li>проверяет итог и ставит флаги.</li>
+      </ol></div>
+    <div class="block"><span class="lbl">Блок 6 · флаги — механизм контроля</span>
+      <div class="tbl"><table>
+        <thead><tr><th>Флаг</th><th>Когда ставится</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">birth_year_out_of_range</td><td>год рождения не между 1700 и 1912</td></tr>
+          <tr><td class="mono">death_year_out_of_range</td><td>то же для смерти</td></tr>
+          <tr><td class="mono">birth_after_death</td><td>рождение позже смерти</td></tr>
+          <tr><td class="mono">age_over_110</td><td>между датами больше 110 лет</td></tr>
+          <tr><td class="mono">age_mismatch</td><td>возраст из текста расходится с разницей годов больше чем на год</td></tr>
+          <tr><td class="mono">year_present_but_no_death</td><td>в «своей» части есть год, а дата смерти не найдена (вероятный пропуск)</td></tr>
+          <tr><td class="mono">death_without_mark</td><td>дата смерти взята без знака †</td></tr>
+        </tbody>
+      </table></div></div>
+    <div class="block"><span class="lbl">Блок 7 · main — запуск и сводка</span>
+      <p>Проходит по всем 13 620 статьям и записывает результат в <code>dates.csv</code>. Статьи с флагами копирует в <code>dates_review.csv</code>. Исключение — статьи, где единственный флаг <code>death_without_mark</code>: обычно это верная дата, просто без креста. Затем считает покрытие, долю полных дат, совпадение возраста и число флагов каждого вида, печатает сводку на экран и в <code>dates_report.txt</code>.</p></div>
+  </div>
+
+  <div class="file">
+    <h3><code>evaluate.py</code> — проверка по эталону</h3>
+    <div class="io"><span>Вход: <b>dates.csv</b> + <b>gold_dates.csv</b> или <b>holdout_dates.csv</b></span><span>Выход: <b>цифры и список расхождений на экране</b></span></div>
+    <p>Для каждой статьи эталона берёт ответ программы и сравнивает с ручной разметкой. Если оба пустые, это верно (даты нет, и программа ничего не выдумала). Если совпадают — верно. Иначе — ошибка, и она печатается с комментарием. Значения «?» (сам текст не позволяет установить дату) в подсчёт не идут. В конце печатаются точность и полнота отдельно для рождения и смерти.</p>
+    <p>Статьи сопоставляются по первым 45 знакам текста, а не по номеру. Номера сдвигаются, когда исправляется разбиение на статьи, и иначе сравнение «поехало» бы.</p>
+  </div>
+
+  <div class="file">
+    <h3>Файлы с ручной разметкой: <code>data/gold_dates.csv</code>, <code>data/holdout_dates.csv</code></h3>
+    <p>Таблицы из четырёх столбцов: начало статьи, правильная дата рождения, правильная дата смерти, комментарий («знак † распознан как „1“», «„поня“ = іюня»). Их можно открыть в Excel и проверить глазами: это лучший способ убедиться, что эталону можно доверять.</p>
+  </div>
+</section>
+
+<section id="run">
+  <h2>Как скачать данные и запустить</h2>
+  <p class="prose">Займёт 10–15 минут при первом запуске, потом — секунды. Интернет нужен только для скачивания источника.</p>
+
+  <h3>Шаг 1. Установить Python</h3>
+  <div class="os">
+    <div><h4>macOS</h4>
+      <p>Откройте «Терминал» (Программы → Утилиты) и введите:</p>
+<pre><code>python3 --version</code></pre>
+      <p>Если появилось «Python 3.10» или новее — всё готово. Если система предложила установить инструменты разработчика, согласитесь. Можно и скачать установщик с <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">python.org/downloads</a>.</p></div>
+    <div><h4>Windows</h4>
+      <p>Скачайте установщик с <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">python.org/downloads</a>. В первом окне установщика <b>обязательно поставьте галочку «Add python.exe to PATH»</b>. Проверка в «Командной строке»:</p>
+<pre><code>python --version</code></pre>
+      <p>На Windows во всех командах ниже пишите <code>python</code> вместо <code>python3</code>.</p></div>
+  </div>
+  <p class="prose">Ничего больше устанавливать не нужно: код использует только стандартные возможности Python.</p>
+
+  <h3>Шаг 2. Распаковать проект и открыть в нём терминал</h3>
+  <p class="prose">Распакуйте архив <code>Семинар7_практика.zip</code>. Внутри папка <code>practice</code> с подпапками <code>code</code>, <code>data</code>, <code>output</code>, <code>reports</code>. Все команды выполняются <b>из папки practice</b>.</p>
+  <div class="os">
+    <div><h4>macOS</h4><p>В Finder щёлкните правой кнопкой по папке <code>practice</code> → «Службы» → «Новый терминал по адресу папки» (если такого пункта нет, используйте второй способ). Или в Терминале наберите <code>cd&nbsp;</code> (с пробелом), перетащите папку в окно и нажмите Enter.</p></div>
+    <div><h4>Windows</h4><p>Откройте папку <code>practice</code> в Проводнике, щёлкните по адресной строке вверху, сотрите адрес, наберите <code>cmd</code> и нажмите Enter. Откроется командная строка уже в этой папке.</p></div>
+  </div>
+
+  <h3>Шаг 3. Скачать источник</h3>
+<pre><code>python3 code/download.py</code></pre>
+  <p class="prose">Ожидаемый результат: «Готово: …necropol_t1.txt — 3,092,966 байт, 61,623 строк». В архиве файл уже лежит, и тогда скрипт напишет «Файл уже есть». Чтобы скачать заново, добавьте <code>--force</code>.</p>
+  <p class="prose"><b>Скачать вручную</b>, если скрипт не работает:</p>
+  <ol class="story prose">
+    <li>Откройте <a href="https://archive.org/details/peterburgskijnekropolt1ag60" target="_blank" rel="noopener">archive.org/details/peterburgskijnekropolt1ag60</a>. Там же можно полистать скан книги.</li>
+    <li>Справа, в блоке «DOWNLOAD OPTIONS», выберите «FULL TEXT». Откроется страница с текстом, или начнётся загрузка файла <code>peterburgskijnekropolt1ag60_djvu.txt</code>.</li>
+    <li>Сохраните его (на странице с текстом: Файл → Сохранить как…) в папку <code>practice/data</code> под именем <code>necropol_t1.txt</code>.</li>
+  </ol>
+  <p class="prose">Прямая ссылка на текст: <code>https://archive.org/download/peterburgskijnekropolt1ag60/peterburgskijnekropolt1ag60_djvu.txt</code></p>
+
+  <h3>Шаг 4. Запустить обработку</h3>
+  <p class="prose">По очереди, по одной команде:</p>
+<pre><code>python3 code/segment.py
+python3 code/dates_v1.py
+python3 code/dates_v2.py
+python3 code/evaluate.py
+python3 code/evaluate.py output/dates.csv data/holdout_dates.csv</code></pre>
+  <div class="tbl"><table>
+    <thead><tr><th>Команда</th><th>Что должно появиться на экране</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">segment.py</td><td>«Статей: 13620», «Из них отсылок «см.»: 1290», статьи по буквам, примеры нарушений алфавита</td></tr>
+      <tr><td class="mono">dates_v1.py</td><td>Ничего: файл <code>dates_v1.csv</code> создаётся молча</td></tr>
+      <tr><td class="mono">dates_v2.py</td><td>«Найдена дата смерти: 11543 (93.6%)», «Найдена дата рождения: 6012 (48.8%)», список флагов, «На ручную проверку: 417»</td></tr>
+      <tr><td class="mono">evaluate.py</td><td>Эталон 60: рождение 100 % / 100 %, смерть 98 % / 98 %</td></tr>
+      <tr><td class="mono">evaluate.py … holdout</td><td>Отложенная выборка 40: рождение 94 % / 100 %, смерть 95 % / 97 %, и три расхождения с пояснениями</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Шаг 5. Посмотреть результаты</h3>
+  <ul class="prose">
+    <li><b>Excel:</b> откройте <code>output/dates.csv</code> двойным щелчком. Если всё оказалось в одном столбце (так бывает в русском Excel), используйте Данные → «Из текста/CSV», кодировка UTF-8, разделитель «запятая».</li>
+    <li><b>Google Таблицы:</b> Файл → Импорт → Загрузить. Разделитель определится сам.</li>
+    <li><b>Что смотреть:</b> <code>dates.csv</code> — все даты; <code>dates_review.csv</code> — 417 подозрительных статей, в последнем столбце текст «своей» части статьи; <code>dates_report.txt</code> и <code>segment_report.txt</code> — сводки, открываются любым текстовым редактором.</li>
+  </ul>
+
+  <h3>Если что-то пошло не так</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Сообщение</th><th>Причина и что делать</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">command not found: python3<br>«python» не является командой</td><td>Python не установлен, или (Windows) не поставлена галочка «Add to PATH». Переустановите с галочкой. На Windows пишите <code>python</code>, а не <code>python3</code>.</td></tr>
+      <tr><td class="mono">No such file or directory: 'code/…'<br>FileNotFoundError</td><td>Терминал открыт не в папке <code>practice</code>. Повторите шаг 2.</td></tr>
+      <tr><td class="mono">FileNotFoundError: …necropol_t1.txt</td><td>Источник не скачан. Выполните шаг 3.</td></tr>
+      <tr><td class="mono">попытка 1/4 не удалась: HTTP Error 500</td><td>Временный сбой archive.org. Скрипт сам повторит ещё три раза. Если не помогло, подождите несколько минут и запустите снова или скачайте файл вручную (шаг 3).</td></tr>
+      <tr><td class="mono">CERTIFICATE_VERIFY_FAILED</td><td>macOS, Python с python.org: откройте Программы → Python 3.x → «Install Certificates.command» и повторите. Или скачайте файл вручную (шаг 3).</td></tr>
+      <tr><td class="mono">SyntaxError</td><td>Слишком старый Python. Нужен 3.10 или новее.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="decisions">
+  <h2>Почему код написан так</h2>
+  <div class="stack">
+    <div class="decision"><b class="q">Почему регулярные выражения, а не нейросеть, которая «сама прочитает»?</b>
+      <span>Правила видны и проверяемы: про каждое можно сказать, почему оно есть. Результат воспроизводим: тот же текст всегда даёт тот же ответ. 13 600 статей обрабатываются за секунды и бесплатно. ИИ использовался там, где он силён: писать и чинить код по описанию.</span>
+      <span class="alt">Альтернатива: отправить каждую статью в языковую модель. Это дороже, медленнее, ответы могут меняться от запуска к запуску, и каждую ошибку пришлось бы ловить заново.</span></div>
+    <div class="decision"><b class="q">Почему только стандартная библиотека Python?</b>
+      <span>Ничего не нужно устанавливать: код запускается на любом компьютере с Python. Проверяющий сможет повторить результат.</span></div>
+    <div class="decision"><b class="q">Почему несколько маленьких скриптов, а не один большой?</b>
+      <span>Каждый этап можно запустить и проверить отдельно. Когда эталон выявил ошибку этапа 1 (склейки статей), исправлялся только <code>segment.py</code>, а этап дат просто перезапускался. Так же устроен алгоритм со слайда 12: «разбить задачу на этапы, описать каждый отдельно».</span></div>
+    <div class="decision"><b class="q">Почему сначала частотный подсчёт, а не сразу правила?</b>
+      <span>Варианты ошибок не выдуманы, а взяты из корпуса. Видно, какие из них массовые («поля» — 314 раз), а какие единичные. Это тот же приём, что на семинаре со словарём разделителей: собрать реальные варианты и потом искать по ним.</span></div>
+    <div class="decision"><b class="q">Почему программа помечает подозрительное, а не исправляет?</b>
+      <span>«1992» могло быть и 1892, и 1882. Если исправлять наугад, ошибка спрячется в данных. Флаг оставляет решение историку. Исправляются только однозначные случаи: «т» вместо «1», год 13xx.</span></div>
+    <div class="decision"><b class="q">Почему оставлена наивная версия <code>dates_v1.py</code>?</b>
+      <span>Это точка отсчёта. Без неё не видно, что дали доработки: 33 % → 93,6 %.</span></div>
+    <div class="decision"><b class="q">Почему два эталона (60 и 40 статей)?</b>
+      <span>На первых 60 статьях находились ошибки и исправлялся код, поэтому на них программа почти идеальна (98 %). Это завышенная оценка. Последние 40 размечены после окончания правок, и их цифры (95–97 %) честные.</span></div>
+    <div class="decision"><b class="q">Почему возраст берётся только сразу после даты смерти?</b>
+      <span>Иначе программа брала «на 2 г.» у внучки или «служилъ болѣе 40 лѣтъ», и сверка возраста давала ложные тревоги. После правки совпадение выросло с 81 % до 91 %.</span></div>
+  </div>
+</section>
+
+<section id="story">
+  <h2>История доработок</h2>
+  <p class="prose">Эта история и есть ответ на пункт «протестируйте и отметьте доработку». Каждую ошибку нашёл механизм контроля, а не случайный взгляд.</p>
+  <ol class="story prose">
+    <li><b>v1, наивная версия:</b> дата смерти у 33,5 % статей. Причина: правильных «іюля» и «†» в OCR-тексте почти нет.</li>
+    <li><b>Итерация 2:</b> шаблоны по частотам ошибок. Покрытие 91,7 %. Флаги показали новые проблемы: возраст не сходится в 19 % случаев, много статей «год есть — смерти нет».</li>
+    <li><b>Итерация 3:</b> разбор флагов. Слова между знаком и датой («+ въ Дрезденѣ 1833»), «Февраля» с заглавной, двойные даты «15/27 ноября», возраст родственников. Самая забавная ошибка: буква «т» внутри слова «октября» принималась за знак †. Её выдало падение числа полных дат. 93,3 %.</li>
+    <li><b>Эталон из 60 статей</b> выявил ошибку <i>первого</i> этапа: 1 363 статьи были склеены по две-три. Такое бывает: контроль следующего этапа ловит ошибку предыдущего.</li>
+    <li><b>Итерация 4:</b> разрезаны склейки, «своя» часть статьи ограничивается только скобкой с кладбищем, «рожд.» понимается как «урождённая». На эталоне 98 % / 98 %.</li>
+    <li><b>Итоговая проверка</b> на 40 новых статьях: 95 % / 97 %. Две ошибки оставлены как задачи на доработку, чтобы оценка осталась честной.</li>
+  </ol>
+</section>
+
+<section id="qa">
+  <h2>Вопросы и ответы</h2>
+  <div class="stack">
+    <details><summary>Почему у половины статей нет даты рождения? Это же плохой результат.</summary><div><p>В самом справочнике у многих людей дата рождения не указана: на надгробии или в источнике её не было. На эталоне программа нашла все 27 дат рождения, которые там есть, и не выдумала ни одной. 48,8 % отражают содержание источника, а не пропуски программы.</p></div></details>
+    <details><summary>Откуда уверенность, что 95 % — правда?</summary><div><p>40 случайных статей (генератор случайных чисел с фиксированным зерном, выборку можно повторить) размечены вручную после окончания всех правок. Программа их «не видела». Выборка небольшая: при 40 статьях реальная точность может быть на несколько процентов выше или ниже. Для оценки этапа этого достаточно.</p></div></details>
+    <details><summary>Что значит «точность 95 % и полнота 97 %» простыми словами?</summary><div><p>Из дат, которые программа выдала, 95 % верны. Из дат, которые реально есть в статьях, программа нашла 97 %.</p></div></details>
+    <details><summary>Покажите, где в коде механизм контроля.</summary><div><p>В <code>dates_v2.py</code> это две части. Флаги ставятся в конце функции <code>extract</code>: проверки года, порядка дат и возраста. Сводка и файл на проверку создаются в функции <code>main</code>, в блоке с комментарием «Контроль». Третья часть — отдельный скрипт <code>evaluate.py</code> со сверкой по эталону. У этапа 1 свой контроль: число статей по буквам и нарушения алфавита в <code>segment_report.txt</code>.</p></div></details>
+    <details><summary>Что делать с 417 статьями на проверку?</summary><div><p>Это 3,4 % корпуса. Часть исправляется вручную за пару часов. Для части можно сделать полуавтоматический проход, как на семинаре со словарём исключений: программа показывает статью, человек вводит верную дату, ответ сохраняется в файл.</p></div></details>
+    <details><summary>Почему 1336 превращается в 1836, а не в 1886 или 1833?</summary><div><p>OCR чаще всего путает 8 и 3. Во втором разряде года тройка точно ошибочна: XIV века в издании нет. Поэтому её надёжно заменить на 8. Другие разряды программа не трогает: «1333» станет «1833», хотя могло быть и «1883». Поэтому такие случаи в эталоне помечены «?» и не учитываются.</p></div></details>
+    <details><summary>Почему годы ограничены 1700–1912?</summary><div><p>Том издан в 1912 году, а самые ранние погребения в нём — XVIII века. Год вне этого диапазона почти наверняка ошибка OCR («1992», «0099»), и программа ставит флаг.</p></div></details>
+    <details><summary>Вы сами писали код?</summary><div><p>Отвечать честно: код сгенерирован ИИ (Claude) по серии промтов, и это прямо указано в декларации. Тема семинара — вайб-кодинг, поэтому оценивается умение поставить задачу, разбить её на этапы, проверить результат и найти ошибки. Это сделано через механизмы контроля, эталон и сравнение итераций. Перед защитой стоит самой прогнать код и проверить 10 статей эталона (см. последний раздел).</p></div></details>
+    <details><summary>Почему не сделаны остальные этапы (имя, статус, кладбище)?</summary><div><p>Задание просит выбрать один этап и довести его до теста. Этапы 0–1 (подготовка и деление на статьи) сделаны, потому что без них этап «Даты» не запустить. Для остальных в таблице алгоритма описаны правила и контроль: это план следующего шага.</p></div></details>
+    <details><summary>Чем этот подход похож на разобранный на семинаре?</summary><div><p>Почти один в один. Семинар: поиск разделителя «продал» → словарь вариантов разделителя → проверка охвата файлов → словарь исключений. У нас: поиск знака † → словарь его OCR-вариантов → проверка покрытия и флагов → файл ручной проверки.</p></div></details>
+    <details><summary>Как это можно использовать в исследовании?</summary><div><p>Таблица дат даёт возраст смерти (медиана 56 лет по 5 484 статьям с обеими датами), сезонность (максимум в марте, минимум в августе) и динамику захоронений по десятилетиям. Если добавить этапы «статус» и «кладбище», можно сравнивать продолжительность жизни разных сословий и конфессий (православные, лютеранские, католические кладбища).</p></div></details>
+  </div>
+</section>
+
+<section id="weak" class="prose">
+  <h2>Слабые места</h2>
+  <p>Лучше назвать их самой, чем ждать вопроса:</p>
+  <ul>
+    <li><b>Эталон размечен с помощью ИИ.</b> Разметку делала та же модель, что писала код, и она не видела ответов программы. Для надёжности нужна независимая проверка человеком хотя бы части статей.</li>
+    <li><b>Выборки небольшие</b> (60 + 40). Для оценки этапа хватает, для публикации нужно больше.</li>
+    <li><b>Дата без знака † может быть датой погребения</b> («Погребена 19 сентября 1907»). Такие случаи помечены флагом, но не разделены.</li>
+    <li><b>Двойные даты</b> (старый/новый стиль) сохраняются только по старому стилю.</li>
+    <li><b>Страницы с перемешанными колонками</b> (OCR прочитал две колонки как одну) не восстанавливаются, их единицы.</li>
+    <li><b>Сделан только первый том</b> (А–Г). Остальные три тома устроены так же, но код на них не запускался.</li>
+  </ul>
+</section>
+
+<section id="prep" class="prose">
+  <h2>Что сделать перед защитой</h2>
+  <ol class="story">
+    <li>Пройти раздел <a href="#run">«Как скачать данные и запустить»</a> и убедиться, что цифры на экране совпадают с отчётом.</li>
+    <li>Открыть <code>data/holdout_dates.csv</code> и самой сверить 10 статей с текстом в <code>output/entries.csv</code> (найти статью можно поиском по фамилии). Если разметка где-то спорная, поправить её и перезапустить <code>evaluate.py</code>.</li>
+    <li>Открыть <code>dates_v2.py</code> и найти глазами блоки из раздела <a href="#code">«Что происходит в коде»</a>: месяцы, знак смерти, <code>extract</code>, флаги. На защите могут попросить показать, где контроль.</li>
+    <li>Дописать в декларации ИИ пункт «Собственная доработка» своими словами: что проверено и изменено лично.</li>
+    <li>Сдать отчёт <code>result.html</code> через форму со слайда 13. Срок, указанный на слайде, — 15 октября, 23:59.</li>
+  </ol>
+</section>
+
+<footer>Цифры в этом документе получены из последнего прогона: <code>output/dates_report.txt</code> и <code>evaluate.py</code>.</footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Даты Петербургского некрополя</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: одна колонка справочного издания, ~68 знаков; таблицы и код — в своих скроллерах */
+:root{
+  --paper:#f5f6f3; --sheet:#ffffff; --ink:#1c242e; --muted:#5b6672; --rule:#d9ddd8;
+  --accent:#2c4a78; --accent-soft:#e6ecf5; --dagger:#8a2f3a;
+  --good:#2f6b46; --good-soft:#e3f0e7; --warn:#8a5a12; --warn-soft:#f6ecd9;
+  --f-display:"Literata", Georgia, "Times New Roman", serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#13171c; --sheet:#1a1f26; --ink:#e4e7ea; --muted:#9aa4ae; --rule:#2e353e;
+  --accent:#8fb0e3; --accent-soft:#1f2b3d; --dagger:#e08a94;
+  --good:#7cc49a; --good-soft:#1c2c22; --warn:#e2b56b; --warn-soft:#2e2617; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#13171c; --sheet:#1a1f26; --ink:#e4e7ea; --muted:#9aa4ae; --rule:#2e353e;
+  --accent:#8fb0e3; --accent-soft:#1f2b3d; --dagger:#e08a94;
+  --good:#7cc49a; --good-soft:#1c2c22; --warn:#e2b56b; --warn-soft:#2e2617; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:16px/1.6 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+.wrap{max-width:860px;margin:0 auto;display:grid;gap:44px}
+.prose{max-width:68ch}
+h1,h2,h3{font-family:var(--f-display);font-weight:650;line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.9rem,4.5vw,2.6rem)}
+h2{font-size:1.5rem;display:flex;gap:.6em;align-items:baseline}
+h2 .n{font-family:var(--f-mono);font-size:.8rem;color:var(--accent);font-weight:500;letter-spacing:.06em}
+h3{font-size:1.1rem;font-weight:500}
+p{margin:0}
+section{display:grid;gap:16px;min-width:0}
+.eyebrow{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+header{display:grid;gap:14px;border-bottom:1px solid var(--rule);padding-bottom:28px}
+.lede{font-size:1.1rem;color:var(--muted);max-width:62ch}
+.facts{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:.9rem;color:var(--muted)}
+.facts b{color:var(--ink);font-weight:600}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code,.mono{font-family:var(--f-mono);font-size:.88em}
+.dag{color:var(--dagger);font-family:var(--f-display)}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-weight:600;font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--paper)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.src{font-family:var(--f-mono);font-size:.82rem;min-width:22ch}
+.hl{background:var(--accent-soft)}
+ol.steps{margin:0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:s}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:2.2rem 1fr;gap:4px 10px}
+ol.steps li::before{content:counter(s);font-family:var(--f-mono);color:var(--accent);font-size:.9rem;padding-top:2px}
+ol.steps li>*{grid-column:2}
+.prompt{border-left:3px solid var(--accent);background:var(--sheet);padding:14px 16px;border-radius:0 6px 6px 0;display:grid;gap:8px;min-width:0}
+.prompt .tag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.prompt p{font-size:.95rem}
+.prompt .ctl{font-size:.9rem;color:var(--muted)}
+.prompt .ctl b{color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;display:grid;gap:2px}
+.kpi .v{font-family:var(--f-display);font-size:1.7rem;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:.85rem;color:var(--muted)}
+.pill{display:inline-block;font-size:.75rem;padding:1px 8px;border-radius:99px;font-family:var(--f-mono);white-space:nowrap}
+.pill.ok{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.chart{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:14px;overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:520px;height:auto}
+.chart text{fill:var(--muted);font:11px var(--f-mono)}
+.chart .bar{fill:var(--accent)}
+.chart .bar.lo{fill:var(--dagger)}
+.chart .grid{stroke:var(--rule)}
+.caption{font-size:.85rem;color:var(--muted)}
+ul.plain{margin:0;padding-left:1.2em;display:grid;gap:6px}
+pre.cmd{margin:0;font-family:var(--f-mono);font-size:.82rem;line-height:1.55;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;overflow-x:auto}
+.decl{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:18px;display:grid;gap:10px}
+footer{font-size:.85rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:18px}
+@media (max-width:520px){ol.steps li{grid-template-columns:1.6rem 1fr}}
+</style>
+
+<style>body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">Семинар 7 · Вайб-кодинг · практическое задание</span>
+  <h1>Извлечение дат рождения и смерти из «Петербургского некрополя»</h1>
+  <p class="lede">Алгоритм извлечения данных из справочника 1912 года, серия промтов для одного этапа (даты), проверка кода на всём томе и план доработки.</p>
+  <div class="facts">
+    <span>Источник: <b>«Петербургский некрополь», т. 1 (А–Г)</b></span>
+    <span>Статей: <b>13 620</b></span>
+    <span>Код: <b>Python, только стандартная библиотека</b></span>
+  </div>
+</header>
+
+<section class="prose">
+  <h2><span class="n">00</span>Источник</h2>
+  <p><b>Саитов В. И. Петербургский некрополь. Т. 1 (А–Г).</b> СПб.: Тип. М. М. Стасюлевича, 1912. Это словарь лиц, погребённых на петербургских кладбищах в XVIII – начале XX в. Издание составлено по поручению вел. кн. Николая Михайловича. Использован OCR-текст с Internet Archive: <a href="https://archive.org/details/peterburgskijnekropolt1ag60" target="_blank" rel="noopener">archive.org/details/peterburgskijnekropolt1ag60</a>, 61 623 строки, около 3 МБ.</p>
+  <p>Типичная статья:</p>
+  <div class="tbl"><table><tbody><tr><td class="src">Абаза, Аггей Васильевичъ, р. 16 декабря 1782 <span class="dag">{</span> 21 марта 1852 (Александро-Невская лавра…)</td></tr></tbody></table></div>
+  <p><b>Почему этот источник.</b> Он близок к актовым книгам, которые разбирались на семинаре. Это массовый серийный источник с устойчивой формулой записи: <i>фамилия, имя, чин, р. дата † дата, возраст, родственники, (кладбище)</i>. Формула позволяет описать правила деления. При этом текст «грязный»: дореформенная орфография, OCR-ошибки, разорванные страницы. На таком тексте и видно, зачем нужны механизмы контроля. Из дат рождения и смерти получаются возраст смерти, сезонность и динамика по десятилетиям, то есть основа для исследовательского вопроса к корпусу.</p>
+</section>
+
+<section>
+  <h2><span class="n">01</span>Алгоритм по схеме семинара</h2>
+  <p class="prose">Схема со слайда «Автоматизированная разметка текста» применена к источнику:</p>
+  <ol class="steps">
+    <li><b>Выделить структурные элементы.</b><span>Статья — основная единица. Внутри статьи: фамилия; имя и отчество; титул или чин; дата рождения («р.»); дата смерти («†»); указанный возраст («на 45 г.», «63 л.»); родственники («Жена:», «Съ …»); место погребения в скобках. Служебные элементы: номера страниц, колонтитулы, стихотворные эпитафии, отсылки «— см.».</span></li>
+    <li><b>Сформулировать принципы деления.</b><span>Статья начинается с новой строки словами «Фамилия,». Фамилии идут по алфавиту. Дата после «р.» — рождение, после «†» — смерть. Первая пара дат до родственников и до скобки с кладбищем относится к самому человеку. Скобка в конце статьи — место погребения.</span></li>
+    <li><b>Перевести принципы на понятный компьютеру язык.</b><span>Регулярные выражения. Список вариантов написания месяцев и знака <span class="dag">†</span> составлен по частотному подсчёту OCR-искажений в корпусе.</span></li>
+    <li><b>Разбить задачу на этапы.</b><span>См. таблицу ниже: этапы 0–6.</span></li>
+    <li><b>Описать каждый этап отдельно.</b><span>Для каждого этапа в таблице указаны вход, правило и выход.</span></li>
+    <li><b>Спроектировать механизмы контроля.</b><span>У каждого этапа своя проверка (последний столбец). Для выбранного этапа контроль реализован полностью.</span></li>
+  </ol>
+  <div class="tbl"><table>
+    <thead><tr><th>Этап</th><th>Что делает</th><th>Правило</th><th>Контроль</th></tr></thead>
+    <tbody>
+      <tr><td>0. Подготовка</td><td>Отсекает предисловие, удаляет мусорные строки, склеивает переносы</td><td>Начало словаря — «Абаза, Аггей»; мусор — строки из цифр и обрывков</td><td>Число и примеры удалённых строк</td></tr>
+      <tr><td>1. Статьи</td><td>Делит текст на статьи</td><td>«Фамилия,» с начала абзаца на букву своего раздела; режет склеенные статьи после «).»</td><td>Число статей по буквам, нарушения алфавитного порядка</td></tr>
+      <tr><td>2. Имя</td><td>Фамилия, имя, отчество, пол</td><td>Текст до второй запятой; пол — по окончанию отчества или фамилии</td><td>Доля статей без отчества, словарь имён</td></tr>
+      <tr class="hl"><td><b>3. Даты</b></td><td><b>Даты рождения и смерти, указанный возраст</b></td><td><b>Знаки «р.» / «†» с учётом OCR-вариантов; «своя» часть статьи</b></td><td><b>Покрытие, правдоподобие, сверка с возрастом, эталон</b></td></tr>
+      <tr><td>4. Статус</td><td>Чин, титул, сословие, профессия</td><td>Словарь: «колл. сов.», «купецъ», «графиня», «младенецъ»…</td><td>Частотный список нераспознанных слов</td></tr>
+      <tr><td>5. Кладбище</td><td>Место погребения и его нормализация</td><td>Последняя скобка; словарь вариантов («Волково лютер.» = «Волково лютеранское»)</td><td>Все варианты свести к списку кладбищ из предисловия (около 40)</td></tr>
+      <tr><td>6. Таблица</td><td>Сборка базы: человек — даты — статус — кладбище</td><td>Связь по id статьи</td><td>Выборочная ручная сверка 50 строк</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="n">02</span>Серия промтов для этапа 3 «Даты»</h2>
+  <p class="prose">В каждом промте есть описание задачи и механизм контроля её выполнения. Промты 4 и 5 написаны по итогам прогонов кода.</p>
+
+  <div class="prompt">
+    <span class="tag">Промт 1 · постановка</span>
+    <p>«Ты помогаешь историку извлечь данные из OCR-текста справочника „Петербургский некрополь“ (т. 1, 1912, дореформенная орфография). В файле <code>output/entries.csv</code> одна строка — одна статья (столбцы id, surname, is_reference, text). Типичная статья: „Абаза, Аггей Васильевичъ, р. 16 декабря 1782 † 21 марта 1852 (Александро-Невская лавра)“. „р.“ — дата рождения, „†“ — дата смерти, иногда указан только год. После основного лица могут идти родственники со своими датами. Напиши скрипт на Python (только стандартная библиотека: re, csv), который для каждой статьи находит даты рождения и смерти основного лица и сохраняет их в CSV в формате ГГГГ-ММ-ДД (ГГГГ-ММ или ГГГГ для неполной даты). Каждое регулярное выражение поясни комментарием.»</p>
+    <p class="ctl"><b>Контроль:</b> «В конце выведи, у скольких статей найдены дата смерти и дата рождения (без отсылок „см.“).»</p>
+  </div>
+
+  <div class="prompt">
+    <span class="tag">Промт 2 · искажения OCR</span>
+    <p>«Дата смерти найдена только у 33 % статей. Текст после OCR: знак † распознан как <code>+ 1 | Т т { -</code>, „іюля“ — как „юля/поля/1юля“, „апрѣля“ — как „апрЪля/апрфля/апр$ля“, в годах 8 стала 3 (1336), а 1 — буквой т. Сначала напиши скрипт, который посчитает по корпусу все слова между числом дня и четырёхзначным годом, а также символы перед датой: так будут видны реальные варианты. На основе этой статистики сделай шаблоны месяцев и знака смерти устойчивыми к искажениям. Одиночную „1“ считай знаком смерти, только если после неё пробел („1 5 марта“ = † 5 марта).»</p>
+    <p class="ctl"><b>Контроль:</b> «Ничего не исправляй молча. Каждое правило нормализации (т → 1, 13xx → 18xx) вынеси в отдельную функцию с комментарием. Покажи покрытие до и после.»</p>
+  </div>
+
+  <div class="prompt">
+    <span class="tag">Промт 3 · механизм контроля</span>
+    <p>«Добавь в скрипт механизм контроля:<br>(1) долю статей с найденной датой смерти и долю полных дат;<br>(2) флаги правдоподобия: год вне 1700–1912, рождение позже смерти, возраст больше 110 лет;<br>(3) сверку с возрастом, указанным в тексте („на 45 г.“, „63 л.“): если он расходится с разницей дат больше чем на год, ставь флаг;<br>(4) флаг, если в части статьи о самом человеке есть четырёхзначный год, а дата смерти не найдена.<br>Статьи с флагами сохраняй в <code>dates_review.csv</code> для ручной проверки, сводку — в <code>dates_report.txt</code>.»</p>
+    <p class="ctl"><b>Контроль:</b> флаги ловят ошибки двух видов — ошибки программы и ошибки OCR в самом тексте («1992» вместо 1892). Вторые программа не исправляет, а показывает человеку.</p>
+  </div>
+
+  <div class="prompt">
+    <span class="tag">Промт 4 · доработка по результатам теста</span>
+    <p>«По dates_review.csv нашлись системные ошибки. Исправь каждую и покажи, как изменились цифры контроля:<br>(а) между знаком и датой стоит место: „р. въ Ригѣ 9 апрѣля“, „+ убитъ 12 октября“;<br>(б) год перед запятой „+ 1795, на 45 г.“ не находится;<br>(в) „Февраля“ с заглавной буквы;<br>(г) буква „т“ внутри слова „октября“ принимается за †;<br>(д) возраст внучки („на 2 г.“) считается возрастом покойного — брать возраст только сразу после даты смерти;<br>(е) перенос на границе страниц „де- кабря“;<br>(ж) двойная дата „15/27 ноября“ — брать первую (старый стиль);<br>(з) „рожд.“ значит „урождённая“, а не дату рождения;<br>(и) скобка внутри статьи „рожд. Дюлу (Бивоча)“ — не место погребения.»</p>
+    <p class="ctl"><b>Контроль:</b> после каждой правки перезапуск, сравнение сводки контроля и оценки по эталону с предыдущим прогоном. Новые ошибки (регрессии) откатываются.</p>
+  </div>
+
+  <div class="prompt">
+    <span class="tag">Промт 5 · оценка по эталону</span>
+    <p>«Напиши <code>evaluate.py</code>: он сравнивает результат с ручной разметкой (<code>data/gold_dates.csv</code>, 60 случайных статей) и выдаёт точность и полноту отдельно для рождения и смерти, а также список расхождений. Статьи сопоставляй по началу текста, а не по id, потому что id меняются при исправлении этапа 1.»</p>
+    <p class="ctl"><b>Контроль:</b> эталон использовался при отладке, поэтому после последней правки размечена ещё одна выборка из 40 статей (<code>holdout_dates.csv</code>). Она нужна только для итоговой, непредвзятой оценки.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">03</span>Тестирование на источнике</h2>
+  <p class="prose">Код запущен на всём томе: 13 620 статей, из них 12 330 без отсылок «см.». Итог на отложенной выборке, которая не использовалась при отладке:</p>
+  <div class="kpis">
+    <div class="kpi"><span class="v">93,6 %</span><span class="l">статей с найденной датой смерти</span></div>
+    <div class="kpi"><span class="v">95 / 97 %</span><span class="l">точность / полнота, дата смерти (отложенная выборка)</span></div>
+    <div class="kpi"><span class="v">94 / 100 %</span><span class="l">точность / полнота, дата рождения (отложенная выборка)</span></div>
+    <div class="kpi"><span class="v">90,9 %</span><span class="l">совпадение с возрастом, указанным в тексте (±1 год)</span></div>
+  </div>
+
+  <h3>Как менялся результат от итерации к итерации</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Версия</th><th>Что изменено</th><th class="num">Смерть найдена</th><th class="num">Рождение найдено</th><th class="num">Эталон: смерть, точн./полн.</th></tr></thead>
+    <tbody>
+      <tr><td>v1</td><td>«Правильные» названия месяцев, знак † или +</td><td class="num">33,5 %</td><td class="num">36,4 %</td><td class="num">94 / 28 %</td></tr>
+      <tr><td>итерация 2</td><td>OCR-варианты месяцев, знака, годов (по частотам)</td><td class="num">91,7 %</td><td class="num">45,6 %</td><td class="num">—</td></tr>
+      <tr><td>итерация 3</td><td>Слова-вставки, двойные даты, возраст, регистр, «т» в слове</td><td class="num">93,3 %</td><td class="num">49,2 %</td><td class="num">98 / 93 %</td></tr>
+      <tr class="hl"><td>итерация 4</td><td>Разрезаны 1 363 склеенные статьи; «своя» часть по скобке с кладбищем; «рожд.»</td><td class="num">93,6 %</td><td class="num">48,8 %</td><td class="num">98 / 98 %</td></tr>
+    </tbody>
+  </table></div>
+  <p class="caption">Дата рождения есть не в каждой статье: составитель часто знал только дату смерти. Поэтому 48,8 % — это не пропуски программы. На эталоне полнота по рождению 100 %. В итерации 4 знаменатель вырос с 11 136 до 12 330 статей, так как разрезанные склейки стали отдельными статьями.</p>
+
+  <h3>Примеры работы</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Текст статьи (OCR)</th><th>Рождение</th><th>Смерть</th><th>Что сложного</th></tr></thead>
+    <tbody>
+      <tr><td class="src">Гребне, Соф!я-Доротея, рожд. //етерсонв, р. 12 марта 1816 <span class="dag">1</span> 26 января 1877</td><td class="mono">1816-03-12</td><td class="mono">1877-01-26</td><td>«рожд.» без даты; † распознан как «1»</td></tr>
+      <tr><td class="src">Банье, Андрей-Фридрихъ, р. въ Мекленбургъ-ШверинЪ 29 сентября 1769 <span class="dag">+</span> 27 апрЪля 1840, 70 л.</td><td class="mono">1769-09-29</td><td class="mono">1840-04-27</td><td>Место между знаком и датой; возраст 70 сходится</td></tr>
+      <tr><td class="src">Алябьевъ, Оедоръ младенецъ, р. 5 ня 1858 <span class="dag">+</span> 16 мая 1859</td><td class="mono">1858-06-05</td><td class="mono">1859-05-16</td><td>«ня» = іюня</td></tr>
+      <tr><td class="src">Годенъ, Виктор!я, рожд. Вердье <span class="dag">+</span> 28 поня 1905, 71 г.</td><td class="mono">—</td><td class="mono">1905-06-28</td><td>«рожд.» = урождённая; «поня» = іюня</td></tr>
+      <tr><td class="src">Гельмгольцъ, Оедоръ, капитанъ, р. 1852 <span class="dag">Т</span> 1892</td><td class="mono">1852</td><td class="mono">1892</td><td>Только годы; † распознан как «Т»</td></tr>
+      <tr><td class="src">Аркъ-фанъ, Карлъ Карловичъ, р. 28 августа 1839 … + 11 августа 1992</td><td class="mono">1839-08-28</td><td class="mono">1992-08-11</td><td><span class="pill warn">на проверку</span> ошибка OCR в источнике (1892)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Флаги контроля</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Флаг</th><th class="num">Статей</th><th>Что обычно стоит за ним</th></tr></thead>
+    <tbody>
+      <tr><td><code>death_without_mark</code></td><td class="num">491</td><td>Знак † съеден OCR; дата взята без знака (или это дата погребения)</td></tr>
+      <tr><td><code>year_present_but_no_death</code></td><td class="num">336</td><td>Сильно испорченный OCR: «24 : Бля 1888», «51юля», «23 янв»</td></tr>
+      <tr><td><code>birth_after_death</code></td><td class="num">27</td><td>Ошибка цифр в OCR: «р. 3 февраля 1849 1 17 марта 1832»</td></tr>
+      <tr><td><code>age_mismatch</code></td><td class="num">26</td><td>Возраст указан с месяцами или неверно распознан</td></tr>
+      <tr><td><code>age_over_110</code> / вне 1700–1912</td><td class="num">23 / 20</td><td>«1992», «1534», «0099» — ошибки OCR в годах</td></tr>
+    </tbody>
+  </table></div>
+  <p class="caption">Всего на ручную проверку отобрано 417 статей (3,4 % корпуса), список — в <code>output/dates_review.csv</code>.</p>
+
+  <h3>Пример применения: месяц смерти</h3>
+  <div class="chart" id="season" role="img" aria-label="Число смертей по месяцам: максимум в марте (1183), минимум в августе (707)"></div>
+  <p class="caption">11 236 статей с известным месяцем смерти и годом в пределах 1700–1912. Больше всего смертей в марте (1 183), меньше всего в августе (707). Такие данные можно использовать для исследовательского вопроса о сезонности смертности в петербургской элите XIX в.</p>
+</section>
+
+<section class="prose">
+  <h2><span class="n">04</span>Оценка и доработка</h2>
+  <p><b>Соответствие задаче.</b> Этап выполняет свою задачу: на отложенной выборке программа нашла 37 из 38 дат смерти, все 17 дат рождения, ошибок в чтении дат нет. Оба промаха на отложенной выборке вызваны не правилами чтения дат, а тем, как программа выделяет часть статьи о самом человеке:</p>
+  <ul class="plain">
+    <li>«Волкова, Марія Федоровна — см. Мей. Волкова‚ Марѳа…» — после второй фамилии OCR поставил «‚» (нижнюю кавычку) вместо запятой, и две статьи не разделились (этап 1).</li>
+    <li>«Бажановъ … 1820. Вдова: Устина … т 16 мая 1846» — слово «Вдова:» не входит в список границ, и программа взяла дату смерти вдовы.</li>
+  </ul>
+  <p><b>Доработка на следующем этапе:</b></p>
+  <ul class="plain">
+    <li>Добавить «Вдова:», «Вдовецъ:», «Мать», «Отецъ» в список границ своей части статьи; на этапе 1 принимать «‚» как запятую.</li>
+    <li>Восстанавливать годы с флагами по контексту: возраст «на 61 г.» плюс год рождения дают год смерти. Если указан возраст, то при «1992» верное значение — 1892.</li>
+    <li>Отличать дату погребения («Погребенъ 1877») от даты смерти и хранить её в отдельном столбце.</li>
+    <li>Хранить дату по старому и новому стилю («15/27 ноября») в двух столбцах.</li>
+    <li>Обработать 417 статей из <code>dates_review.csv</code> вручную или отдельным полуавтоматическим проходом (как словарь исключений на семинаре).</li>
+    <li>Перейти к этапам 2, 4, 5 (имя, статус, кладбище) по той же схеме: промт → прогон → контроль.</li>
+  </ul>
+</section>
+
+<section class="prose">
+  <h2><span class="n">05</span>Файлы и воспроизведение</h2>
+  <p>Нужен Python 3.10 или новее. Сторонние библиотеки не нужны. Команды выполняются из папки <code>practice</code> (на Windows — <code>python</code> вместо <code>python3</code>):</p>
+<pre class="cmd"><code>python3 code/download.py      # скачать OCR-текст с archive.org в data/
+python3 code/segment.py       # этапы 0–1 → output/entries.csv
+python3 code/dates_v1.py      # этап 3, наивная версия
+python3 code/dates_v2.py      # этап 3, итоговая версия + контроль
+python3 code/evaluate.py      # сверка с эталоном (60 статей)
+python3 code/evaluate.py output/dates.csv data/holdout_dates.csv   # отложенная выборка</code></pre>
+  <p>Если скрипт скачивания недоступен, файл можно взять вручную: <code>https://archive.org/download/peterburgskijnekropolt1ag60/peterburgskijnekropolt1ag60_djvu.txt</code> → сохранить как <code>data/necropol_t1.txt</code>. Цифры этого отчёта воспроизводятся точно. CSV-файлы записаны в UTF-8 с BOM и открываются в Excel.</p>
+  <div class="tbl"><table><tbody>
+    <tr><td><code>code/download.py</code></td><td>Этап 0: скачивание источника с проверкой содержимого</td></tr>
+    <tr><td><code>code/segment.py</code></td><td>Этапы 0–1: очистка и разбиение на статьи</td></tr>
+    <tr><td><code>code/dates_v1.py</code></td><td>Этап 3, наивная версия (для сравнения)</td></tr>
+    <tr><td><code>code/dates_v2.py</code></td><td>Этап 3, итоговая версия с контролем</td></tr>
+    <tr><td><code>code/evaluate.py</code></td><td>Сверка с ручной разметкой</td></tr>
+    <tr><td><code>data/gold_dates.csv</code>, <code>holdout_dates.csv</code></td><td>Ручная разметка: 60 + 40 статей</td></tr>
+    <tr><td><code>output/dates.csv</code></td><td>Результат: даты для 13 620 статей</td></tr>
+    <tr><td><code>output/dates_review.csv</code>, <code>dates_report.txt</code></td><td>Статьи на проверку, сводка контроля</td></tr>
+  </tbody></table></div>
+</section>
+
+<section>
+  <h2><span class="n">06</span>Декларация использования ИИ</h2>
+  <div class="decl prose">
+    <p><b>Модель:</b> Claude Opus 5.5 (Anthropic), в режиме агента Claude Code.</p>
+    <p><b>Цели:</b> написание и отладка кода; частотный анализ OCR-искажений; подготовка ручной разметки для проверки; оформление отчёта.</p>
+    <p><b>Что вошло в работу:</b> код всех этапов, тексты промтов, разметка эталона (100 статей), отчёт.</p>
+    <p><b>Собственная доработка после общения с моделью:</b> <i>[заполнить: что проверено и изменено лично — например, перепроверка эталона, выбор источника, формулировка исследовательского вопроса]</i></p>
+  </div>
+</section>
+
+<footer>Источник: Саитов В. И. Петербургский некрополь. Т. 1. СПб., 1912. OCR: Internet Archive. Расчёты воспроизводятся командами из <code>README.md</code>.</footer>
+</div>
+
+<script>
+(function(){
+  var data=[1087,1009,1183,1119,980,849,837,707,755,849,873,988];
+  var names=["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+  var W=640,H=230,L=44,R=12,T=14,B=30,max=1200;
+  var bw=(W-L-R)/12, s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+  [0,300,600,900,1200].forEach(function(v){
+    var y=T+(H-T-B)*(1-v/max);
+    s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/>';
+    s+='<text x="'+(L-6)+'" y="'+(y+4)+'" text-anchor="end">'+v+'</text>';
+  });
+  data.forEach(function(v,i){
+    var h=(H-T-B)*v/max, x=L+i*bw+bw*0.18, y=T+(H-T-B)-h;
+    var cls=v===Math.min.apply(null,data)?'bar lo':'bar';
+    s+='<rect class="'+cls+'" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw*0.64).toFixed(1)+'" height="'+h.toFixed(1)+'" rx="2"><title>'+names[i]+': '+v+'</title></rect>';
+    s+='<text x="'+(x+bw*0.32).toFixed(1)+'" y="'+(H-10)+'" text-anchor="middle">'+names[i]+'</text>';
+  });
+  document.getElementById('season').innerHTML=s+'</svg>';
+})();
+</script>
+
+</body>
+</html>

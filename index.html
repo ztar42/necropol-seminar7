@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Даты Петербургского некрополя</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,650&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+:root{--paper:#f5f6f3;--sheet:#fff;--ink:#1c242e;--muted:#5b6672;--rule:#d9ddd8;--accent:#2c4a78;
+  --f-display:"Literata",Georgia,serif;--f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--paper:#13171c;--sheet:#1a1f26;--ink:#e4e7ea;--muted:#9aa4ae;--rule:#2e353e;--accent:#8fb0e3;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--f-body);
+  padding:48px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:720px;margin:0 auto;display:grid;gap:28px}
+h1{font-family:var(--f-display);font-weight:650;font-size:clamp(1.8rem,4.5vw,2.4rem);line-height:1.2;margin:0;text-wrap:balance}
+.eyebrow{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+p{margin:0}.lede{color:var(--muted);font-size:1.05rem}
+.cards{display:grid;gap:12px}
+a.card{display:grid;gap:4px;padding:18px 20px;background:var(--sheet);border:1px solid var(--rule);border-radius:8px;color:var(--ink);text-decoration:none}
+a.card:hover,a.card:focus-visible{border-color:var(--accent);outline:none}
+a.card b{font-family:var(--f-display);font-size:1.15rem;color:var(--accent)}
+a.card span{color:var(--muted);font-size:.95rem}
+footer{font-size:.85rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:16px}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="display:grid;gap:12px">
+    <span class="eyebrow">Семинар 7 · Вайб-кодинг · практическое задание</span>
+    <h1>Извлечение дат рождения и смерти из «Петербургского некрополя»</h1>
+    <p class="lede">Источник: Саитов В. И. Петербургский некрополь. Т. 1 (А–Г). СПб., 1912. OCR-текст с Internet Archive, 13 620 статей.</p>
+  </div>
+  <div class="cards">
+    <a class="card" href="result.html"><b>Отчёт о выполнении задания</b><span>Алгоритм по схеме семинара, серия промтов для этапа «Даты», результаты тестирования, доработка, декларация ИИ.</span></a>
+    <a class="card" href="explain.html"><b>Пояснения к решению</b><span>Как устроен код, почему он написан так, как скачать данные и запустить проект, вопросы и ответы.</span></a>
+    <a class="card" href="Семинар7_практика.zip"><b>Скачать проект (zip, 1,5 МБ)</b><span>Код на Python, источник, ручная разметка, результаты и оба отчёта.</span></a>
+    <a class="card" href="https://github.com/ztar42/necropol-seminar7"><b>Репозиторий на GitHub</b><span>Те же файлы: можно просматривать код прямо в браузере.</span></a>
+  </div>
+  <footer>Код и тексты подготовлены с помощью Claude Opus 5.5 (Anthropic); подробности — в декларации ИИ в отчёте.</footer>
+</div>
+</body>
+</html>
