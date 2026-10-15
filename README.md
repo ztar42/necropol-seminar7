@@ -5,6 +5,7 @@
 - [`result.html`](result.html) — отчёт о выполнении практического задания;
 - [`explain.html`](explain.html) — пояснения к решению, инструкция по запуску;
 - [`practice/necropol_dates.py`](practice/necropol_dates.py) — всё решение одним Python-файлом;
+- [`practice/prompts/haiku_prompts.md`](practice/prompts/haiku_prompts.md) — серия промтов для Claude Haiku и код, который она по ней написала;
 - [`practice/`](practice) — проект по этапам: код (`code/`), источник и ручная разметка (`data/`), результаты (`output/`);
 - `Семинар7_практика.zip` — всё то же одним архивом.
 

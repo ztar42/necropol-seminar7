@@ -27,3 +27,9 @@
 
 Скачать источник вручную: https://archive.org/download/peterburgskijnekropolt1ag60/peterburgskijnekropolt1ag60_djvu.txt
 → сохранить как `data/necropol_t1.txt`.
+
+## Промты для Claude Haiku
+`prompts/haiku_prompts.md` — серия из 6 промтов для этапа «Даты», адаптированная для небольшой модели
+(готовые данные, одно изменение на шаг, тесты в каждом промте). `prompts/dates_haiku.py` — код,
+который Claude Haiku написала по этой серии (без правок). Запуск: `python3 prompts/dates_haiku.py`,
+оценка: `python3 code/evaluate.py output/dates_haiku.csv data/holdout_dates.csv`.
