@@ -12,6 +12,12 @@
 Нужен Python 3.10+ (https://www.python.org/downloads/), сторонние библиотеки не нужны.
 Команды выполняются из этой папки. На Windows пишите `python` вместо `python3`.
 
+Всё одной командой (файл самодостаточен, его можно запускать и отдельно от проекта):
+
+    python3 necropol_dates.py
+
+Или по этапам:
+
     python3 code/download.py      # скачать источник (если файла ещё нет)
     python3 code/segment.py       # этапы 0–1: текст -> статьи (output/entries.csv)
     python3 code/dates_v1.py      # этап 3, наивная версия (для сравнения)
