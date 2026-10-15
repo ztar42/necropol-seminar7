@@ -3,9 +3,12 @@
 Источник: «Петербургский некрополь», т. 1 (А–Г), СПб., 1912 — OCR-текст с Internet Archive
 (https://archive.org/details/peterburgskijnekropolt1ag60), сохраняется в `data/necropol_t1.txt`.
 
+Выбранный этап — извлечение дат рождения и смерти. Его код (`code/dates_haiku.py`) написала
+модель Claude Haiku по серии из шести промтов (`prompts/haiku_prompts.md`).
+
 ## Отчёты
 - `reports/result.html` — для проверяющего (выполнение задания);
-- `reports/explain.html` — для докладчика (подробные объяснения, инструкция по запуску, вопросы и ответы).
+- `reports/explain.html` — для докладчика (пояснения, инструкция по запуску, вопросы и ответы).
 Открываются в любом браузере двойным щелчком.
 
 ## Запуск
@@ -18,18 +21,11 @@
 
 Или по этапам:
 
-    python3 code/download.py      # скачать источник (если файла ещё нет)
+    python3 code/download.py      # этап 0: скачать источник (если файла ещё нет)
     python3 code/segment.py       # этапы 0–1: текст -> статьи (output/entries.csv)
-    python3 code/dates_v1.py      # этап 3, наивная версия (для сравнения)
-    python3 code/dates_v2.py      # этап 3, итоговая версия + контроль
-    python3 code/evaluate.py                                           # эталон, 60 статей
-    python3 code/evaluate.py output/dates.csv data/holdout_dates.csv   # отложенная выборка, 40 статей
+    python3 code/dates_haiku.py   # этап 3: даты + контроль (output/dates_haiku.csv, dates_haiku_review.csv)
+    python3 code/evaluate.py                                                 # эталон, 60 статей
+    python3 code/evaluate.py output/dates_haiku.csv data/holdout_dates.csv   # отложенная выборка, 40 статей
 
 Скачать источник вручную: https://archive.org/download/peterburgskijnekropolt1ag60/peterburgskijnekropolt1ag60_djvu.txt
 → сохранить как `data/necropol_t1.txt`.
-
-## Промты для Claude Haiku
-`prompts/haiku_prompts.md` — серия из 6 промтов для этапа «Даты», адаптированная для небольшой модели
-(готовые данные, одно изменение на шаг, тесты в каждом промте). `prompts/dates_haiku.py` — код,
-который Claude Haiku написала по этой серии (без правок). Запуск: `python3 prompts/dates_haiku.py`,
-оценка: `python3 code/evaluate.py output/dates_haiku.csv data/holdout_dates.csv`.
