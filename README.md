@@ -4,6 +4,7 @@
 
 - [`result.html`](result.html) — отчёт о выполнении практического задания;
 - [`explain.html`](explain.html) — пояснения к решению, инструкция по запуску;
+- [`result.docx`](result.docx), [`explain.docx`](explain.docx) — те же отчёты в формате Word;
 - [`practice/prompts/haiku_prompts.md`](practice/prompts/haiku_prompts.md) — серия из 6 промтов для Claude Haiku; по ней Haiku написала код этапа «Даты» [`practice/code/dates_haiku.py`](practice/code/dates_haiku.py);
 - [`practice/necropol_dates.py`](practice/necropol_dates.py) — всё решение одним Python-файлом;
 - [`practice/`](practice) — проект по этапам: код (`code/`), источник и ручная разметка (`data/`), результаты (`output/`);
