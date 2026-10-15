@@ -8,7 +8,7 @@
 - [`practice/prompts/sonnet_prompts.md`](practice/prompts/sonnet_prompts.md) — серия из 5 промтов на обычном языке; по ней Claude Sonnet написала код этапа «Даты» [`practice/code/dates_sonnet.py`](practice/code/dates_sonnet.py);
 - [`practice/necropol_dates.py`](practice/necropol_dates.py) — всё решение одним Python-файлом;
 - [`practice/`](practice) — проект по этапам: код (`code/`), источник и ручная разметка (`data/`), результаты (`output/`);
-- `Семинар7_практика.zip` — всё то же одним архивом.
+- `Семинар7_практика.zip` — архив для проверяющего: отчёт, промты, код, разметка и результаты (без исходного текста и материалов для докладчика).
 
 Источник: Саитов В. И. Петербургский некрополь. Т. 1 (А–Г). СПб., 1912 —
 OCR-текст с Internet Archive (https://archive.org/details/peterburgskijnekropolt1ag60).

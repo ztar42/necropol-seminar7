@@ -362,9 +362,9 @@ python3 code/dates_sonnet.py  # этап 3 (код Sonnet): самопровер
 python3 code/evaluate.py      # сверка с эталоном (60 статей)
 python3 code/evaluate.py output/dates_sonnet.csv data/holdout_dates.csv   # отложенная выборка</code></pre>
   <p><b>Или одной командой:</b> <code>python3 necropol_dates.py</code>. Это всё решение в одном файле: скачивание, разбиение, код Sonnet, контроль и проверка по встроенной ручной разметке. Результаты побайтно совпадают с поэтапным запуском.</p>
-  <p>Если скачивание не работает, файл можно взять вручную: <code>https://archive.org/download/peterburgskijnekropolt1ag60/peterburgskijnekropolt1ag60_djvu.txt</code>, сохранить как <code>data/necropol_t1.txt</code>. Файлы этапов 0–1 записаны в UTF-8 с BOM и сразу открываются в Excel; файлы этапа 3 — в обычном UTF-8, в Excel их открывают через «Данные → Из текста/CSV».</p>
+  <p>Источник (<code>data/necropol_t1.txt</code>, 3 МБ) и промежуточный файл статей (<code>output/entries.csv</code>) в архив не входят: их создают <code>download.py</code> и <code>segment.py</code>. Если скачивание не работает, файл можно взять вручную: <code>https://archive.org/download/peterburgskijnekropolt1ag60/peterburgskijnekropolt1ag60_djvu.txt</code>, сохранить как <code>data/necropol_t1.txt</code>. Файлы этапов 0–1 записаны в UTF-8 с BOM и сразу открываются в Excel; файлы этапа 3 — в обычном UTF-8, в Excel их открывают через «Данные → Из текста/CSV».</p>
   <div class="tbl"><table><tbody>
-    <tr><td><code>reports/result.docx</code>, <code>explain.docx</code></td><td>Отчёты в формате Word (то же содержание, что и HTML)</td></tr>
+    <tr><td><code>reports/result.docx</code></td><td>Этот отчёт в формате Word</td></tr>
     <tr><td><code>prompts/sonnet_prompts.md</code></td><td>Серия из 5 промтов (раздел 02)</td></tr>
     <tr><td><code>code/dates_sonnet.py</code></td><td>Этап 3: код, написанный Claude Sonnet по промтам, без правок</td></tr>
     <tr><td><code>code/download.py</code>, <code>code/segment.py</code></td><td>Этапы 0–1: скачивание, очистка, разбиение на статьи</td></tr>
