@@ -8,7 +8,7 @@ data/gold_dates.csv — 60 случайных статей (random.seed(42)), д
 data/holdout_dates.csv — 40 других случайных статей (random.seed(2026)),
 размеченных ПОСЛЕ последней правки кода: честная итоговая оценка.
 
-Запуск:  python3 code/evaluate.py [output/dates_haiku.csv] [data/holdout_dates.csv]
+Запуск:  python3 code/evaluate.py [output/dates_sonnet.csv] [data/holdout_dates.csv]
 """
 import csv
 import sys
@@ -53,5 +53,5 @@ def main(pred_path, gold_path=GOLD):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else ROOT / "output" / "dates_haiku.csv",
+    main(sys.argv[1] if len(sys.argv) > 1 else ROOT / "output" / "dates_sonnet.csv",
          sys.argv[2] if len(sys.argv) > 2 else GOLD)

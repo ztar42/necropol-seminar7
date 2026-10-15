@@ -3,8 +3,8 @@
 Источник: «Петербургский некрополь», т. 1 (А–Г), СПб., 1912 — OCR-текст с Internet Archive
 (https://archive.org/details/peterburgskijnekropolt1ag60), сохраняется в `data/necropol_t1.txt`.
 
-Выбранный этап — извлечение дат рождения и смерти. Его код (`code/dates_haiku.py`) написала
-модель Claude Haiku по серии из шести промтов (`prompts/haiku_prompts.md`).
+Выбранный этап — извлечение дат рождения и смерти. Его код (`code/dates_sonnet.py`) написала
+модель Claude Sonnet по серии из пяти промтов на обычном языке (`prompts/sonnet_prompts.md`).
 
 ## Отчёты
 - `reports/result.html` — для проверяющего (выполнение задания);
@@ -23,9 +23,9 @@
 
     python3 code/download.py      # этап 0: скачать источник (если файла ещё нет)
     python3 code/segment.py       # этапы 0–1: текст -> статьи (output/entries.csv)
-    python3 code/dates_haiku.py   # этап 3: даты + контроль (output/dates_haiku.csv, dates_haiku_review.csv)
+    python3 code/dates_sonnet.py  # этап 3: самопроверка + даты + пометки (output/dates_sonnet.csv, dates_sonnet_review.csv)
     python3 code/evaluate.py                                                 # эталон, 60 статей
-    python3 code/evaluate.py output/dates_haiku.csv data/holdout_dates.csv   # отложенная выборка, 40 статей
+    python3 code/evaluate.py output/dates_sonnet.csv data/holdout_dates.csv  # отложенная выборка, 40 статей
 
 Скачать источник вручную: https://archive.org/download/peterburgskijnekropolt1ag60/peterburgskijnekropolt1ag60_djvu.txt
 → сохранить как `data/necropol_t1.txt`.

@@ -8,12 +8,12 @@
 
 Рядом с этим файлом появятся папки:
     data/    — necropol_t1.txt, OCR-текст с archive.org (скачивается один раз)
-    output/  — entries.csv (статьи), dates_haiku.csv (даты и флаги),
-               dates_haiku_review.csv (статьи на ручную проверку), segment_report.txt
+    output/  — entries.csv (статьи), dates_sonnet.csv (даты и пометки),
+               dates_sonnet_review.csv (статьи на ручную проверку), segment_report.txt
 
 Тот же код, разбитый на этапы, — в папке code/ (download.py, segment.py,
-dates_haiku.py, evaluate.py). Результаты обоих вариантов совпадают.
-Этап 3 (даты) написан моделью Claude Haiku по серии промтов prompts/haiku_prompts.md.
+dates_sonnet.py, evaluate.py). Результаты обоих вариантов совпадают.
+Этап 3 (даты) написан моделью Claude Sonnet по серии промтов prompts/sonnet_prompts.md.
 """
 import csv
 import io
@@ -170,216 +170,276 @@ def segment():
 
 # ===========================================================================
 # ЭТАП 3. Даты рождения и смерти с механизмами контроля.
-# Код ниже написан моделью Claude Haiku по серии промтов prompts/haiku_prompts.md
-# и перенесён сюда без изменений (как в code/dates_haiku.py).
+# Код ниже написан моделью Claude Sonnet по серии промтов prompts/sonnet_prompts.md
+# и перенесён сюда без изменений (как в code/dates_sonnet.py). Единственная правка —
+# в sonnet_main (бывшая main) пути к файлам указаны через папку OUTPUT.
 # ===========================================================================
 
-FLAG_NAMES = [
-    "birth_year_out_of_range",
-    "death_year_out_of_range",
-    "birth_after_death",
-    "age_over_110",
-    "year_present_but_no_death",
-]
+# Названия месяцев: сначала приставка слова, затем часть слова (для искажённых OCR вариантов:
+# «юля», «поля», «1юня», «пюня», «апрфля», «апр$ля», «шоня» ...)
+MONTH_PREFIX = [("янв", 1), ("фев", 2), ("мар", 3), ("апр", 4), ("мая", 5), ("май", 5),
+                ("июн", 6), ("юн", 6), ("июл", 7), ("юл", 7), ("авг", 8), ("сен", 9),
+                ("окт", 10), ("ноя", 11), ("дек", 12)]
+MONTH_PART = [("янв", 1), ("февр", 2), ("март", 3), ("апр", 4), ("юн", 6), ("юл", 7),
+              ("оня", 6), ("оля", 7), ("авг", 8), ("густ", 8), ("сент", 9), ("окт", 10), ("нояб", 11),
+              ("дек", 12), ("кабр", 12)]
 
-# Номер месяца -> шаблон регулярного выражения (OCR-искажения допускаются).
-MONTH_PATTERNS = {
-    1: r"ян\S?[ая]ря",
-    2: r"ф?февраля",
-    3: r"марта",
-    4: r"апр\S{0,3}ля",
-    5: r"мая",
-    6: r"[1!|{(тпшгнШТІі'№‘]?[юо]{0,2}ня",
-    7: r"[1!|{(тпшгнШТІі'№‘]?[юо]{0,2}ля",
-    8: r"а[вз]\S?уста",
-    9: r"сен\S?тября",
-    10: r"о[кя]\S?тября",
-    11: r"но\S?я\S?бря|нояря",
-    12: r"дек?абря",
-}
+# год: 1500-1999 или искажённый OCR (13xx -> 18xx, «т852» -> 1852)
+YEAR = r"(1[3-9]\d\d|[тТ]\d{3})"
+DATE_RE = re.compile(r"(?<!\d)(\d{1,2})\s*(1?[^\d]{3,12}?)\s*" + YEAR + r"(?!\d)")
+YEAR_RE = re.compile(r"(?<!\d)" + YEAR + r"(?!\d)")
+BIRTH_MARK_RE = re.compile(r"[рРpP]\.\s*$")
 
 
-def norm_month(word):
-    for number, pattern in MONTH_PATTERNS.items():
-        if re.fullmatch(pattern, word, re.I):
-            return number
+def fix_year(y):
+    if y[0] in "тТ":
+        return "1" + y[1:]
+    if y.startswith("13"):
+        return "18" + y[2:]
+    return y
+
+
+def month_of(word):
+    w = word.lower().replace("ѣ", "е").replace("ъ", "")
+    w = re.sub(r"[^а-яё]", "", w).replace("і", "и")
+    w = w.replace("i", "и")
+    if w in ("ня", "пня"):  # «5 ня 1858»: от слова «июня» остался обрывок
+        return 6
+    for stem, num in MONTH_PREFIX:
+        if w.startswith(stem):
+            return num
+    for part, num in MONTH_PART:
+        if part in w:
+            return num
     return None
 
 
-def norm_year(s):
-    s = s.lower().replace("т", "1").replace("з", "3")
-    if "." in s or not s.isdigit() or len(s) != 4:
-        return None
-    year = int(s)
-    if 1300 <= year <= 1399:  # OCR путает 8 и 3: 1336 -> 1836
-        year += 500
-    return year
-
-
-def norm_day(s):
-    s = s.lower().replace("т", "1").replace("|", "1").replace("l", "1")
-    if "/" in s:
-        s = s.split("/")[0]
-    if not s.isdigit():
-        return None
-    day = int(s)
-    if day > 31 and str(day).startswith("1"):  # 115 -> 15
-        day = int(str(day)[1:])
-    if not 1 <= day <= 31:
-        return None
-    return day
-
-
-_MONTH_ALT = "|".join(f"(?:{p})" for p in MONTH_PATTERNS.values())
-
-# Знак смерти: не внутри слова; «1» — знак только если после неё пробел.
-DEATH_MARK = r"(?<!\w)(?:[+†{|Ттф—\-]{1,2}(?=[\s\d])|1(?=\s))"
-
-# Слово между меткой и датой: не с цифры, не со знака смерти.
-WORD = r"(?!(?:[\d+†{|—\-]|[Ттф1](?!\w)))[^\s,(){}]+"
-WORDS = r"(?:" + WORD + r"\s+){0,2}"
-
-# Граница «своей» части: родственники, «Съ ...», скобки с местом захоронения.
-_BRACKET_RE = re.compile(r"[({][А-ЯЁІѢѲA-Z]")
-_PLACE_WORDS = ("кладбищ", "лавр", "монастыр", "пустын", "собор", "церк", "сел")
-_STOP_RE = re.compile(
-    r"(?<!\w)(?:Жена|Мужъ|Дочь|Сынъ|Внучка|Надпись)(?!\w)|(?<!\w)Съ (?=[А-ЯЁ])"
-)
-_YEAR_IN_PART_RE = re.compile(r"(?<!\d)1[6-9]\d\d(?!\d)")
-
-
-def _own_end(text, start):
-    ends = [len(text)]
-    for m in _BRACKET_RE.finditer(text, start):
-        window = text[m.start():m.start() + 80]
-        close = window.find(")")
-        if close != -1:
-            window = window[:close]
-        if any(word in window.lower() for word in _PLACE_WORDS):
-            ends.append(m.start())
+def find_dates(text):
+    """Список (начало, конец, дата-строка) в порядке следования."""
+    found, pos = [], 0
+    while pos < len(text):
+        m = DATE_RE.search(text, pos)
+        y = YEAR_RE.search(text, pos)
+        if m and (not y or m.start() <= y.start() + 3):
+            mon = month_of(m.group(2))
+            day = int(m.group(1))
+            if mon and 1 <= day <= 31:
+                s = "%s-%02d-%02d" % (fix_year(m.group(3)), mon, day)
+                found.append((m.start(), m.end(), s))
+                pos = m.end()
+                continue
+            if mon:
+                s = "%s-%02d" % (fix_year(m.group(3)), mon)
+                found.append((m.start(), m.end(), s))
+                pos = m.end()
+                continue
+        if y:
+            found.append((y.start(), y.end(), fix_year(y.group(1))))
+            pos = y.end()
+        else:
             break
-    stop = _STOP_RE.search(text, start)
-    if stop:
-        ends.append(stop.start())
-    return min(ends)
+    return found
 
 
-def _date_re(prefix):
-    # prefix: метка перед датой. Дата: [день месяц] год. День без месяца не допускается.
-    return re.compile(
-        prefix
-        + r"(?:(?P<day>[\dТтl|/]{1,6})\s+(?P<month>"
-        + _MONTH_ALT
-        + r")(?:\s*\([^()]{1,30}\))?\s+)?(?P<year>[\dТтз.]{4})(?![\dТтз])",
-        re.I,
-    )
+CEMETERY_WORDS = ("кладб", "лавр", "монаст", "церк", "пуст", "собор")
+# слова, с которых начинается рассказ о родственниках / надписи (только с заглавной буквы)
+RELATIVES_RE = re.compile(
+    r"(?<=\s)(?:Жена|Мужъ|Сынъ|Дочь|Отецъ|Мать|Братъ|Сестра|Вдова|Тесть|Теща|Внукъ|"
+    r"Дѣти|Дети|Съ|Сь|Отъ|Надпись)\b")
+CROSS_RE = re.compile(r"(?:^|\s)[+{|}Тт1ф—†$ГЕ:\-]{1,3}(?=\s|$)")
+BIRTH_WORD_RE = re.compile(r"(?<![^\W\d_])[рРpP]\.")
+REF_RE = re.compile(r"[—-]\s*см\.")
 
 
-# «р.» допускает до двух слов перед датой; «рожд.» — только дату сразу после метки.
-_BIRTH_RE = _date_re(r"(?:(?<!\w)р\.\s*" + WORDS + r"|(?<!\w)рожд\.\s*)")
-_DEATH_RE = _date_re(DEATH_MARK + r"\s*" + WORDS)
+def own_part(text):
+    """Часть статьи, относящаяся к самому человеку: без кладбища и без родственников."""
+    # отсылка в начале склеенной записи: «Иванова —см. Петрова. Сидорова, Анна, ...»
+    m = REF_RE.search(text)
+    if m and not YEAR_RE.search(text[:m.start()]):
+        rest = text[m.end():]
+        k = rest.find(". ")
+        text = rest[k + 2:] if k >= 0 else ""
+    # скобки: кладбище обрезаем, прочие (другое написание фамилии) выкидываем
+    out, pos = "", 0
+    for pm in re.finditer(r"\(([^()]*)(\)|$)", text):
+        inner, closed = pm.group(1), pm.group(2)
+        tail = text[pm.end():].strip(" .,;:")
+        if not closed or not tail or any(w in inner.lower() for w in CEMETERY_WORDS):
+            return cut_relatives(out + text[pos:pm.start()])
+        out += text[pos:pm.start()] + " "
+        pos = pm.end()
+    return cut_relatives(out + text[pos:])
 
 
-def _format(match):
-    if match is None:
-        return ""
-    year = norm_year(match.group("year"))
-    if year is None:
-        return ""
-    if match.group("month") is None:
-        return f"{year:04d}"
-    month = norm_month(match.group("month"))
-    day = norm_day(match.group("day"))
-    if day is None:
-        return f"{year:04d}-{month:02d}"
-    return f"{year:04d}-{month:02d}-{day:02d}"
+def cut_relatives(body):
+    m = RELATIVES_RE.search(body)
+    return body[:m.start()] if m else body
 
 
-def _year(date_str):
-    return int(date_str.split("-")[0]) if date_str else None
+F_RANGE = "год вне диапазона"
+F_ORDER = "рождение позже смерти"
+F_OLD = "больше 110 лет"
+F_AGE = "возраст не совпадает"
+F_NODEATH = "есть год, но нет смерти"
+NO_CROSS = "смерть без креста"
+ALL_FLAGS = [F_RANGE, F_ORDER, F_OLD, F_AGE, F_NODEATH, NO_CROSS]
+AGE_RE = re.compile(r"(?<![\d.])(\d{1,3})\s*(?:л\.|г\.|лѣт|лЪт|лет|лЬт)")
 
 
-def _flags(part, birth, death):
-    flags = []
-    by, dy = _year(birth), _year(death)
-    if by is not None and not 1700 <= by <= 1912:
-        flags.append("birth_year_out_of_range")
-    if dy is not None and not 1700 <= dy <= 1912:
-        flags.append("death_year_out_of_range")
-    if by is not None and dy is not None:
+def check_flags(body, dates, birth, death, death_end):
+    out = []
+    by = int(birth[:4]) if birth else None
+    dy = int(death[:4]) if death else None
+    if any(y is not None and not 1700 <= y <= 1912 for y in (by, dy)):
+        out.append(F_RANGE)
+    if by and dy:
         if by > dy:
-            flags.append("birth_after_death")
+            out.append(F_ORDER)
         if dy - by > 110:
-            flags.append("age_over_110")
-    if not death and _YEAR_IN_PART_RE.search(part):
-        flags.append("year_present_but_no_death")
-    return flags
+            out.append(F_OLD)
+        m = AGE_RE.search(body[death_end:death_end + 30])
+        if m and abs(int(m.group(1)) - (dy - by)) > 1:
+            out.append(F_AGE)
+    if dates and not death:
+        out.append(F_NODEATH)
+    return out
 
 
-def extract(text):
-    # Работаем только со «своей» частью статьи: после фамилии и до родственников.
-    start = text.find(",") + 1
-    part = text[start:_own_end(text, start)]
-    birth_match = _BIRTH_RE.search(part)
-    death_start = birth_match.end() if birth_match else 0
-    birth = _format(birth_match)
-    death = _format(_DEATH_RE.search(part, death_start))
-    return {"birth": birth, "death": death, "flags": _flags(part, birth, death)}
+def extract(text, is_reference=False, flags=None):
+    """Возвращает (birth, death). В flags (список) добавляет пометки для ручной проверки."""
+    if is_reference:
+        return "", ""
+    body = own_part(text)
+    dates = find_dates(body)
+    if not dates:
+        return "", ""
+    birth = death = ""
+    death_end = 0
+    prev_end = 0
+    for i, (st, en, d) in enumerate(dates):
+        ctx = body[prev_end:st]
+        prev_end = en
+        has_birth = bool(BIRTH_WORD_RE.search(ctx))
+        if has_birth:
+            # крест после «р.» («р. 2 + 3 апрѣля», «р. 183...... + 1882»):
+            # дата рождения нечитаема, а эта дата — дата смерти
+            bm = list(BIRTH_WORD_RE.finditer(ctx))[-1]
+            if CROSS_RE.search(ctx[bm.end():]):
+                has_birth = False
+        has_cross = bool(CROSS_RE.search(ctx))
+        if i == 0:
+            if has_birth:
+                birth = d
+            elif has_cross:
+                death, death_end = d, en
+                break
+            elif len(dates) > 1 and CROSS_RE.search(body[en:dates[1][0]]):
+                birth = d  # «Клара, 29 октября 1821 | 17 июля 1891» (нет «р.»)
+            else:
+                death, death_end = d, en
+                break
+        else:
+            if has_cross:
+                death, death_end = d, en
+            elif (i + 1 < len(dates) and birth
+                  and CROSS_RE.search(body[en:dates[i + 1][0]])):
+                continue  # промежуточная дата (напр. свадьба), смерть — после креста
+            elif len(ctx) <= 40 and not has_birth and birth:
+                death, death_end = d, en
+                if flags is not None:
+                    flags.append(NO_CROSS)
+            break
+    if flags is not None:
+        flags.extend(check_flags(body, dates, birth, death, death_end))
+    return birth, death
 
 
-def _bd(text):
-    result = extract(text)
-    return {"birth": result["birth"], "death": result["death"]}
+SELF_TESTS = [
+    ("Баженовъ, Иванъ Прокофьевичъ, р. 8 ноября 1791 + 8 января 1872 (Смоленское кладбище).", False,
+     ("1791-11-08", "1872-01-08")),
+    ("Боголюбовъ, Павелъ Николаевичъ + 28 декабря 1904 (Новодѣвичій монастырь).", False,
+     ("", "1904-12-28")),
+    ("Годенъ, Викторія + 28 поня 1905 (Католическое кладбище).", False, ("", "1905-06-28")),
+    ("Брезинская, Юстина + 16 апрфля 1889 (Смоленское кладбище).", False, ("", "1889-04-16")),
+    ("Гребне, Софія-Доротея, р. 12 марта 1816 1 26 января 1877 (Волково кладбище).", False,
+     ("1816-03-12", "1877-01-26")),
+    ("Гюне, баронъ Эдуардъ, р. 15 ноября 1852 1 5 марта 1856 (Волково кладбище).", False,
+     ("1852-11-15", "1856-03-05")),
+    ("Гельмгольцъ, Ѳедоръ, капитанъ, р. 1852 Т 1892 (Гатчинское кладбище).", False, ("1852", "1892")),
+    ("Гамельманъ, Амалія, р. 9 февраля 1800 + 23 января 1336 (Волково кладбище).", False,
+     ("1800-02-09", "1836-01-23")),
+    ("Волкова, Марія Филипповна + 2 Февраля 1894 (Новодѣвичій монастырь).", False, ("", "1894-02-02")),
+    ("Акорчевъ, Александръ, колл. сов. { 26 марта 1885, на 61 г. Жена: Вѣра Петровна 1 23 октября 1909 (Смоленское кладбище).",
+     False, ("", "1885-03-26")),
+    ("Банье, Андрей-Фридрихъ, р. въ Мекленбургъ-Шверинѣ 29 сентября 1769 + 27 апрѣля 1840, 70 л. (Волково кладбище).",
+     False, ("1769-09-29", "1840-04-27")),
+    ("Брюнъ-де-Сентъ-Ипполитъ, Елизавета, рожд. Дюлу (Бивоча) 1 5 февраля 1843, 34 л. (Смоленское кладбище).",
+     False, ("", "1843-02-05")),
+    ("Годенъ, Викторія, рожд. Вердье + 28 поня 1905, 71 г. (Католическое кладбище).", False, ("", "1905-06-28")),
+    ("Вальдманъ, Елена, рожд. Шинна, р. въ Митавѣ 30 сентября 1799 т 1 мая 1875 (Гатчинское кладбище).",
+     False, ("1799-09-30", "1875-05-01")),
+    ("Аркъ-фанъ, Карлъ, р. 28 августа 1839 + 11 августа 1992 (Волково кладбище).", False,
+     ("1839-08-28", "1992-08-11")),
+    ("Авенарусъ, Владимръ Геормевичъ, р. 2 + 3 апрЪля 1878 (Свято-Троицкое кладбище въ Старомъ ПетергофЪ).",
+     False, ("", "1878-04-03")),
+    ("Глазовъ, Петръ Ивановичъ + 19 1юля 1903, на 61 г. (Волково православное кладбище).", False,
+     ("", "1903-07-19")),
+    ("Аксенова, Елизавета Ивановна—см. Анцъ.", True, ("", "")),
+]
 
 
-def self_test():
-    assert _bd("Баженовъ, Иванъ Прокофьевичъ, р. 8 ноября 1791 + 8 января 1872 (Смоленское кладбище).") == {"birth": "1791-11-08", "death": "1872-01-08"}
-    assert _bd("Боголюбовъ, Павелъ Николаевичъ + 28 декабря 1904 (Новодѣвичій монастырь).") == {"birth": "", "death": "1904-12-28"}
-    assert _bd("Аксенова, Елизавета Ивановна—см. Анцъ.") == {"birth": "", "death": ""}
-    assert extract("Годенъ, Викторія + 28 поня 1905 (Католическое кладбище).")["death"] == "1905-06-28"
-    assert extract("Глазовъ, Петръ Ивановичъ + 19 1юля 1903, на 61 г. (Волково кладбище).")["death"] == "1903-07-19"
-    assert extract("Брезинская, Юстина + 16 апрфля 1889 (Смоленское кладбище).")["death"] == "1889-04-16"
-    assert extract("Волкова, Марія Филипповна + 2 Февраля 1894 (Новодѣвичій монастырь).")["death"] == "1894-02-02"
-    assert _bd("Гребне, Софія-Доротея, р. 12 марта 1816 1 26 января 1877 (Волково кладбище).") == {"birth": "1816-03-12", "death": "1877-01-26"}
-    assert _bd("Гюне, баронъ Эдуардъ, р. 15 ноября 1852 1 5 марта 1856 (Волково кладбище).") == {"birth": "1852-11-15", "death": "1856-03-05"}
-    assert _bd("Гельмгольцъ, Ѳедоръ, капитанъ, р. 1852 Т 1892 (Гатчинское кладбище).") == {"birth": "1852", "death": "1892"}
-    assert _bd("Алексѣевъ, Сергѣй, р. 4 юля 1805 Т 10 ноября 1853 (Волково кладбище).") == {"birth": "1805-07-04", "death": "1853-11-10"}
-    assert extract("Гамельманъ, Амалія, р. 9 февраля 1800 + 23 января 1336 (Волково кладбище).")["death"] == "1836-01-23"
-    assert extract("Гюльпенъ, Францискъ, р. 16 ноября 1818 т 3 ноября 1863 (Католическое кладбище).")["death"] == "1863-11-03"
-    assert extract("Акорчевъ, Александръ, колл. сов. { 26 марта 1885, на 61 г. Жена: Вѣра Петровна 1 23 октября 1909 (Смоленское кладбище).")["death"] == "1885-03-26"
-    assert _bd("Банье, Андрей-Фридрихъ, р. въ Мекленбургъ-Шверинѣ 29 сентября 1769 + 27 апрѣля 1840, 70 л. (Волково кладбище).") == {"birth": "1769-09-29", "death": "1840-04-27"}
-    assert extract("Брюнъ-де-Сентъ-Ипполитъ, Елизавета, рожд. Дюлу (Бивоча) 1 5 февраля 1843, 34 л. (Смоленское кладбище).")["death"] == "1843-02-05"
-    assert extract("Годенъ, Викторія, рожд. Вердье + 28 поня 1905, 71 г. (Католическое кладбище).")["birth"] == ""
-    assert _bd("Вальдманъ, Елена, рожд. Шинна, р. въ Митавѣ 30 сентября 1799 т 1 мая 1875 (Гатчинское кладбище).") == {"birth": "1799-09-30", "death": "1875-05-01"}
-    r = extract("Аркъ-фанъ, Карлъ, р. 28 августа 1839 + 11 августа 1992 (Волково кладбище).")
-    assert "death_year_out_of_range" in r["flags"] and "age_over_110" in r["flags"]
+def self_check():
+    for text, ref, expected in SELF_TESTS:
+        flags = []
+        got = extract(text, ref, flags)
+        if text.startswith("Аркъ-фанъ") and not {F_RANGE, F_OLD} <= set(flags):
+            sys.exit("САМОПРОВЕРКА НЕ ПРОЙДЕНА: пометки для Аркъ-фанъ: %r" % flags)
+        if got != expected:
+            sys.exit("САМОПРОВЕРКА НЕ ПРОЙДЕНА: %r -> %r, ожидалось %r" % (text, got, expected))
+    print("Самопроверка пройдена (%d примеров)." % len(SELF_TESTS))
+
+
+def sonnet_main():
+    self_check()
+    with open(OUTPUT / "entries.csv", encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.DictReader(f))
+    n_birth = n_death = 0
+    counts = dict.fromkeys(ALL_FLAGS, 0)
+    review = []
+    with open(OUTPUT / "dates_sonnet.csv", "w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["id", "birth", "death", "flags"])
+        for r in rows:
+            flags = []
+            b, d = extract(r["text"], r["is_reference"] == "1", flags)
+            flags = list(dict.fromkeys(flags))
+            n_birth += bool(b)
+            n_death += bool(d)
+            for fl in flags:
+                counts[fl] += 1
+            if flags:
+                review.append([r["id"], ";".join(flags), b, d, r["text"]])
+            w.writerow([r["id"], b, d, ";".join(flags)])
+    with open(OUTPUT / "dates_sonnet_review.csv", "w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["id", "flags", "birth", "death", "text"])
+        w.writerows(review)
+    n = len(rows)
+    print("=== Сводка ===")
+    print("Статей обработано: %d" % n)
+    print("Дата рождения найдена: %d (%.1f%%)" % (n_birth, 100 * n_birth / n))
+    print("Дата смерти найдена: %d (%.1f%%)" % (n_death, 100 * n_death / n))
+    print("Помечено для проверки: %d (%.1f%%)" % (len(review), 100 * len(review) / n))
+    for fl in ALL_FLAGS:
+        print("  %s: %d" % (fl, counts[fl]))
 
 
 def extract_dates(entries):
-    """Применяет extract() к каждой статье, пишет dates_haiku.csv и файл на проверку."""
-    results = [(row, extract(row["text"])) for row in entries]
-    write_csv(OUTPUT / "dates_haiku.csv",
-              [{"id": row["id"], "birth": r["birth"], "death": r["death"],
-                "flags": ";".join(r["flags"])} for row, r in results],
-              ["id", "birth", "death", "flags"])
-    write_csv(OUTPUT / "dates_haiku_review.csv",
-              [{"id": row["id"], "birth": r["birth"], "death": r["death"],
-                "flags": ";".join(r["flags"]), "text": row["text"]}
-               for row, r in results if r["flags"]],
-              ["id", "birth", "death", "flags", "text"])
-
-    # Сводка контроля.
-    base = [r for row, r in results if row["is_reference"] == "0"]
-    n = len(base)
-    pct = lambda x: f"{x} ({100 * x / n:.1f}%)"
-    print(f"[3] Статей без отсылок «см.»: {n}")
-    print(f"    с датой смерти:   {pct(sum(1 for r in base if r['death']))}")
-    print(f"    с датой рождения: {pct(sum(1 for r in base if r['birth']))}")
-    print(f"    статей с флагами (output/dates_haiku_review.csv): "
-          f"{sum(1 for _, r in results if r['flags'])}")
-    for name in FLAG_NAMES:
-        print(f"      {name}: {sum(1 for _, r in results if name in r['flags'])}")
-    return [{"id": row["id"], "birth": r["birth"], "death": r["death"]} for row, r in results]
+    """Запускает код Sonnet (с самопроверкой) и возвращает найденные даты для проверки."""
+    print("[3] ", end="")
+    sonnet_main()
+    with open(OUTPUT / "dates_sonnet.csv", encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
 
 
 # ===========================================================================
@@ -428,8 +488,7 @@ def write_csv(path, rows, cols):
 def main():
     download()
     entries = segment()
-    self_test()          # проверки из промтов: если код сломан, здесь будет ошибка
-    results = extract_dates(entries)
+    results = extract_dates(entries)   # внутри — самопроверка на 18 примерах из промтов
     evaluate(entries, results, GOLD,
              "эталон: 60 статей (использовались при отладке, оценка завышена)")
     evaluate(entries, results, HOLDOUT,
